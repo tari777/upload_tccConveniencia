@@ -1,0 +1,26 @@
+Tela de venda:
+É preciso ter um botão para abrir a lista de produtos para o usuario escolher o produto que sera vendido
+As informações daquela tabela vão ser passadas nos campos(Inputs)
+
+Informações que vão ser passadas:
+nmr_nota_fiscal
+nome_text
+
+
+Pegar o input da quantidade e diminuir da tabela de produtos
+Exemplo:
+input_quantidade = 3
+"UPDATE produtos SET quantidade = '{input_quantidade}' WHERE id = 1"
+Após a venda ser feita, o estoque tem que atualizar, então vou fazer um UPDATE na Quantidade da tabela de produtos
+
+
+
+posso pegar o ncm ou icms cadastrado no produto e passar na venda?
+
+
+tabela de vendas baixo igual a do prodata
+
+ler (read_task_venda) o código do produto escolhido (abrir uma tela com a tabela de produtos) e passar as informações na tabela 
+a baixo igual a do prodata e também nos inputs acima
+
+adicionar primeiro na tela de cima dps na tabela em baixo, inserir em baixo com o valor do input de cima
