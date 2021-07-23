@@ -1,3 +1,5 @@
 Checar se a quantidade de produto que sera vendido tem no estoque
 
 Fazer a soma do valor total na parte de vendas
+
+Sistema para conferir se o codigo de barras esta cadastrado no sistema
