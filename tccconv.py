@@ -18,6 +18,7 @@ prod_venda_entrada = ''
 prod_venda_unitario = ''
 testo = 'fodase'
 i = 0
+x = 0
 tabelVendas = []
 if not os.path.exists('C:/pastaTCC'):
     os.makedirs('C:/pastaTCC')
@@ -31,7 +32,7 @@ cursor = banco.cursor()
 cursor.execute("CREATE TABLE IF NOT EXISTS produtos (cod_produto INTEGER PRIMARY KEY AUTOINCREMENT, nome text, quantidade real, cod_barras text, desc text, ncm text, icms text, valor_entrada float, valor_unitario float, valor_total float)")
 cursor.execute("CREATE TABLE IF NOT EXISTS fornecedores (cod_fornecedor INTEGER PRIMARY KEY AUTOINCREMENT, nome text, razao_social text, nome_fantasia text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text, cnpj text, insc_estadual text, telefone text)")
 cursor.execute("CREATE TABLE IF NOT EXISTS entrada (nmr_nota_fiscal TEXT PRIMARY KEY, nome text, nome_fornecedor text, quantidade integer, data_entrada text, valor_unitario real, valor_total real)")
-cursor.execute("CREATE TABLE IF NOT EXISTS saida (nmr_nota_fiscal TEXT PRIMARY KEY, nome text, quantidade integer, data_saida text, valor_unitario real, valor_total real)")
+cursor.execute("CREATE TABLE IF NOT EXISTS saida (nmr_nota_fiscal TEXT PRIMARY KEY AUTOINCREMENT, nome text, quantidade integer, data_saida text, valor_unitario real, valor_total real)")
 cursor.execute("CREATE TABLE IF NOT EXISTS conveniencia (razao_social TEXT PRIMARY KEY, nome text, nome_fantasia text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text,  cnpj text, insc_estadual text, telefone text)")
 
 def on_table_row_click(self, table, row, item):
@@ -82,11 +83,12 @@ def cadastrarEntrada():
             sg.Frame('Data',[ [sg.Input(key='data_produto', size=(20,70)), sg.Button('Date', key='data_entrada')]], title_location='n'),
             ],
         [sg.Frame('Valor Unitário',[ [sg.Input(key='valor_unitario', size=(15,30))]], title_location='n')],
+        [sg.Table(tabelaVendas, key = 'box_vendas', headings=['Nome', 'Quantidade', 'Código Barras', 'Valor Unitário', 'Valor Total'], auto_size_columns=False, col_widths=[10])],
         
         
         [sg.Button('Cadastrar',pad=(10,30))],
     ]
-    return sg.Window('Cadastro', layout=layout, size=(600,400), element_justification='center', finalize = True)
+    return sg.Window('Cadastro', layout=layout, size=(600,500), element_justification='center', finalize = True)
 
 def cadastrarProduto():
     sg.theme('Reddit')
@@ -198,7 +200,7 @@ def consultaProdutosVenda():
     layout2 = [
         [sg.Text('Produtos cadastrados')],
         [sg.Table(tabelaProdutos, size = (500,15), key='box_produtos_venda',headings=['CódigoProd','Nome', 'Quantidade', 'Cod_barras', 'Descrição', 'NCM', 'ICMS', 'Valor_Entrada','Valor_Uni', 'Valor_Total'],auto_size_columns=True,max_col_width=35, vertical_scroll_only=False)],
-        [sg.Button('Filtra', key='nomesfiltrar'),sg.Button('Tirar Filtro', key='tirarFiltro'), sg.Button('Selecionar', key = 'select_vendas'), sg.Button('Deletar', key ='delete'), sg.Button('Editar', key='edit')],
+        [sg.Button('Filtra', key='nomesfiltrar'),sg.Button('Tirar Filtro', key='tirarFiltro'), sg.Button('Selecionar', key = 'select_vendas')],
         [sg.Input(key='filtroProcurar')],
         [sg.Radio('ID','filters',key = 'radioID', default=True), sg.Radio('Nome','filters',key = 'radioNome'), sg.Radio('CodBarras','filters',key = 'radioCODBARRAS')]
     ]   
@@ -276,6 +278,9 @@ while True:
         break
 
     if event == 'Cadastrar Entrada':
+        cursor.execute("SELECT * FROM produtos ORDER BY cod_produto DESC LIMIT 1")
+        result = cursor.fetchone()
+        print(result[0])
         janela4 = cadastrarEntrada()
        
     elif event == 'Cadastrar Produto':
@@ -357,8 +362,8 @@ while True:
     if event == 'Backup':
         sg.popup('BACKUP')
         
-    #USAR FILTRO
-    if event == 'nomesfiltrar':
+    #USAR FILTRO CONSULTA PRODUTOS
+    if event == 'nomesfiltrar' and window == janela6:
         if values['radioID'] == True: ##Se o botão do NOME estiver selecionado, ele procura por user
             filtroColuna = 'cod_produto'
         elif values['radioNome'] == True: ##Se o botão de SENHA estiver selecionado, ele procura por senha
@@ -372,13 +377,13 @@ while True:
         window.find_element('box').Update(tabelaProdutos)
 
     #SE TIRAR O FILTRO
-    if event == 'tirarFiltro':
+    if event == 'tirarFiltro' and window == janela6:
         tabelaProdutos = read_task()
         window.find_element('box').Update(tabelaProdutos)
-    if event == 'select':
+    if event == 'select' and window == janela6:
         #TRATAMENTO DE ERRO
         try:
-            if tabelaProdutos:
+            if tabelaProdutos and window == janela6:
                 x = values['box'][0] #ISSO FAZ COM QUE SEJA POSSIVEL ESCOLHER UM ITEM DA LISTA CLICANDO
                 print(x)
                 print(tabelaProdutos[x])
@@ -387,7 +392,7 @@ while True:
             sg.popup('Erro de Indice: Selecione algum item da tabela')
 
     #DELETE
-    if event == 'delete': 
+    if event == 'delete' and window == janela6: 
         try:
             if tabelaProdutos:
                 deletar = values['box'][0]
@@ -399,6 +404,39 @@ while True:
                 window.find_element('box').Update(tabelaProdutos) #ATUALIZA OS DADOS
                 sg.popup(f'O produto {nomeDeletar} excluido com sucesso!')
                 
+
+        except IndexError as erro:
+            sg.popup('Erro de Indice: Selecione algum item da tabela')
+
+
+
+
+        #USAR FILTRO CONSULTA PRODUTOS VENDA
+    if event == 'nomesfiltrar' and window == janelaProdutosVenda:
+        if values['radioID'] == True: ##Se o botão do NOME estiver selecionado, ele procura por user
+            filtroColuna = 'cod_produto'
+        elif values['radioNome'] == True: ##Se o botão de SENHA estiver selecionado, ele procura por senha
+            filtroColuna = 'nome'
+        elif values['radioCODBARRAS'] == True: ##Se o botão do EMAIL estiver selecionado, ele procura por EMAIL
+            filtroColuna = 'cod_barras'
+        filtro_procurar = values['filtroProcurar']
+        print(f'procurar: {filtro_procurar}')
+        print(f'coluna: {filtroColuna}')
+        tabelaProdutos = filtrarConteudo()
+        window.find_element('box_produtos_venda').Update(tabelaProdutos)
+
+    #SE TIRAR O FILTRO
+    if event == 'tirarFiltro' and window == janelaProdutosVenda:
+        tabelaProdutos = read_task()
+        window.find_element('box_produtos_venda').Update(tabelaProdutos)
+    if event == 'select' and window == janelaProdutosVenda:
+        #TRATAMENTO DE ERRO
+        try:
+            if tabelaProdutos:
+                x = values['box_produtos_venda'][0] #ISSO FAZ COM QUE SEJA POSSIVEL ESCOLHER UM ITEM DA LISTA CLICANDO
+                print(x)
+                print(tabelaProdutos[x])
+                sg.popup(f'Voce selecionou {tabelaProdutos[x]}')
 
         except IndexError as erro:
             sg.popup('Erro de Indice: Selecione algum item da tabela')
@@ -423,6 +461,7 @@ while True:
         
 
     if window == janelaVenda and event == 'abrir_produtos':
+        tabelaProdutos = read_task()
         janelaProdutosVenda = consultaProdutosVenda()
         window.close()
         #window['nome_produto_venda'].update(prod_nome_produto)
@@ -444,7 +483,7 @@ while True:
                     janelaVenda = venderProduto()
                     window.close() 
         except IndexError as erro:
-            sg.popup('Erro de Indice: Selecione algum item da tabela')
+            pass
 
         
         
@@ -505,14 +544,24 @@ while True:
             total = total + tabelaVendas[i][5]
             total = total #ISSO FAZ COM QUE NÃO BUGUE AO SOMAR, JÁ QUE O VALOR VAI SOMAR EM CIMA DO VALOR 
             i +=1
-        else:
+        else: #QUANDO A VENDA FOR EFETUADA
             sg.popup('Venda concluida com sucesso')
             print('acabou')
             print(total)
+            while x < len(tabelaVendas):
+                qntd = tabelaVendas[x][2]
+
+                cod_prod = tabelaVendas[x][0]
+                print('INSERINDO...')
+                cursor.execute("UPDATE produtos SET quantidade = quantidade - ? WHERE nome = ?", (qntd,  cod_prod))
+                banco.commit()
+                x += 1
+           
 
 
             total = 0 #RESETA O TOTAL
             i = 0 #RESETA O LOOP
+            x = 0
 
     if event == 'procurar_cod_barra' and window == janelaVenda:
         barras= values['cod_barra_venda']
