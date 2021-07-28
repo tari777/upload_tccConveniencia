@@ -10,6 +10,8 @@ import sqlite3
 from PIL import Image
 from datetime import datetime
 import pandas as pd
+from datetime import datetime
+
 total = 0
 prod_venda_nome = ''
 prod_venda_desc = ''
@@ -32,7 +34,7 @@ cursor = banco.cursor()
 cursor.execute("CREATE TABLE IF NOT EXISTS produtos (cod_produto INTEGER PRIMARY KEY AUTOINCREMENT, nome text, quantidade real, cod_barras text, desc text, ncm text, icms text, valor_entrada float, valor_unitario float, valor_total float)")
 cursor.execute("CREATE TABLE IF NOT EXISTS fornecedores (cod_fornecedor INTEGER PRIMARY KEY AUTOINCREMENT, nome text, razao_social text, nome_fantasia text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text, cnpj text, insc_estadual text, telefone text)")
 cursor.execute("CREATE TABLE IF NOT EXISTS entrada (nmr_nota_fiscal TEXT PRIMARY KEY, nome text, nome_fornecedor text, quantidade integer, data_entrada text, valor_unitario real, valor_total real)")
-cursor.execute("CREATE TABLE IF NOT EXISTS saida (nmr_nota_fiscal TEXT PRIMARY KEY AUTOINCREMENT, nome text, quantidade integer, data_saida text, valor_unitario real, valor_total real)")
+cursor.execute("CREATE TABLE IF NOT EXISTS saida (nmr_nota_fiscal INTEGER, nome text, cod_barras text, quantidade integer, data_saida text, valor_unitario real, valor_total real)")
 cursor.execute("CREATE TABLE IF NOT EXISTS conveniencia (razao_social TEXT PRIMARY KEY, nome text, nome_fantasia text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text,  cnpj text, insc_estadual text, telefone text)")
 
 def on_table_row_click(self, table, row, item):
@@ -548,10 +550,29 @@ while True:
             sg.popup('Venda concluida com sucesso')
             print('acabou')
             print(total)
-            while x < len(tabelaVendas):
-                qntd = tabelaVendas[x][2]
+            cursor.execute("SELECT * FROM saida ORDER BY nmr_nota_fiscal DESC LIMIT 1")
+            result = cursor.fetchone()
+            #nmr_notafiscal_antes = result[0] 
+            nmr_notafiscal = result[0] + 1
 
+            while x < len(tabelaVendas):
+                
                 cod_prod = tabelaVendas[x][0]
+                
+                
+                nome_saida = tabelaVendas[x][0]
+                codbarra_saida = tabelaVendas[x][3]
+                qntd = tabelaVendas[x][2]
+                data_saida = datetime.today().strftime('%d-%m-%Y')
+                valor_unitario_saida = tabelaVendas[x][4]
+                valor_total_saida = tabelaVendas[x][5]
+
+                cursor.execute(f"INSERT INTO saida VALUES({nmr_notafiscal}, '{nome_saida}', '{codbarra_saida}', '{qntd}', '{data_saida}', '{valor_unitario_saida}', '{valor_total_saida}')")
+                banco.commit()
+                
+
+                #cursor.execute("INSERT INTO saida VALUES")
+        
                 print('INSERINDO...')
                 cursor.execute("UPDATE produtos SET quantidade = quantidade - ? WHERE nome = ?", (qntd,  cod_prod))
                 banco.commit()
@@ -562,6 +583,18 @@ while True:
             total = 0 #RESETA O TOTAL
             i = 0 #RESETA O LOOP
             x = 0
+
+
+    if event == 'Ver Faturamento':
+        print('faturamento')
+        cursor.execute("SELECT * FROM saida")
+        result = cursor.fetchone()
+        nmr_notafiscal_antes = result
+        print(nmr_notafiscal_antes)
+       
+        
+
+        
 
     if event == 'procurar_cod_barra' and window == janelaVenda:
         barras= values['cod_barra_venda']

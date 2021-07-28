@@ -12,3 +12,5 @@ Cadastrar a entrada dos produtos ( mesma coisa do acima )
 
 
 
+Adioncar um jeito para deixar o nmr da notafiscal como 1 quando não existir nenhuma cadastrada antes
+Eu posso checar se exista alguma com o nmr 1, se não der fetch eu crio
