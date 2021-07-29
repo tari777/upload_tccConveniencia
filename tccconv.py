@@ -32,8 +32,8 @@ banco = sqlite3.connect('C:/pastaTCC/tcc_database.db')
 cursor = banco.cursor()
 
 cursor.execute("CREATE TABLE IF NOT EXISTS produtos (cod_produto INTEGER PRIMARY KEY AUTOINCREMENT, nome text, quantidade real, cod_barras text, desc text, ncm text, icms text, valor_entrada float, valor_unitario float, valor_total float)")
-cursor.execute("CREATE TABLE IF NOT EXISTS fornecedores (cod_fornecedor INTEGER PRIMARY KEY AUTOINCREMENT, nome text, razao_social text, nome_fantasia text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text, cnpj text, insc_estadual text, telefone text)")
-cursor.execute("CREATE TABLE IF NOT EXISTS entrada (nmr_nota_fiscal TEXT PRIMARY KEY, nome text, nome_fornecedor text, quantidade integer, data_entrada text, valor_unitario real, valor_total real)")
+cursor.execute("CREATE TABLE IF NOT EXISTS fornecedores (cod_fornecedor INTEGER PRIMARY KEY AUTOINCREMENT, nome text, razao_social text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text, cnpj text, insc_estadual text, telefone text)")
+cursor.execute("CREATE TABLE IF NOT EXISTS entrada (nmr_nota_fiscal TEXT PRIMARY KEY, nome text, nome_fornecedor text, cod_barras text, quantidade integer, data_entrada text, valor_unitario real, valor_total real)")
 cursor.execute("CREATE TABLE IF NOT EXISTS saida (nmr_nota_fiscal INTEGER, nome text, cod_barras text, quantidade integer, data_saida text, valor_unitario real, valor_total real)")
 cursor.execute("CREATE TABLE IF NOT EXISTS conveniencia (razao_social TEXT PRIMARY KEY, nome text, nome_fantasia text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text,  cnpj text, insc_estadual text, telefone text)")
 
@@ -50,7 +50,7 @@ def on_table_row_click(self, table, row, item):
 
 def janelaMain():
     menu_def = [
-        ['&Cadastro', ['&Cadastrar Entrada', '&Cadastrar Produto']],
+        ['&Cadastro', ['&Cadastrar Entrada', '&Cadastrar Produto', '&Cadastrar Fornecedor']],
         ['&Venda', ['&Vender Produto']],
         ['&Consulta', ['&Consultar Entrada', '&Consultar Produtos']],
         ['&Faturamento', ['&Ver Faturamento']],
@@ -85,7 +85,7 @@ def cadastrarEntrada():
             sg.Frame('Data',[ [sg.Input(key='data_produto', size=(20,70)), sg.Button('Date', key='data_entrada')]], title_location='n'),
             ],
         [sg.Frame('Valor Unitário',[ [sg.Input(key='valor_unitario', size=(15,30))]], title_location='n')],
-        [sg.Table(tabelaVendas, key = 'box_vendas', headings=['Nome', 'Quantidade', 'Código Barras', 'Valor Unitário', 'Valor Total'], auto_size_columns=False, col_widths=[10])],
+        [sg.Table(tabelaVendas, key = 'box_vendas', headings=['Nota Fiscal','Nome', 'Quantidade', 'Nome Fornecedor', 'Código Barras','Data', 'Valor Unitário', 'Valor Total'], auto_size_columns=False, col_widths=[10], vertical_scroll_only=False)],
         
         
         [sg.Button('Cadastrar',pad=(10,30))],
@@ -111,6 +111,34 @@ def cadastrarProduto():
        
         
         [sg.Button('Cadastrar', key='cadastrar_produto',pad=(10,30))],
+    ]
+    return sg.Window('Cadastro', layout=layout, size=(600,400), element_justification='center', finalize = True)
+
+def cadastrarFornecedor():
+    sg.theme('Reddit')
+    layout = [
+        [sg.Text('Cadastro de Fornecedor')],
+        #Mesma linha
+        [sg.Frame('Nome',[ [sg.Input(key='nome_fornecedor', size=(15,30))]],title_color='black', title_location='n'), 
+            sg.Frame('Razão Social',[ [sg.Input(key='razao_social_fornecedor', size=(15,30))]],title_location='n'),   
+            sg.Frame('Rua',[ [sg.Input(key='rua_fornecedor', size=(15,30))]], title_location='n'),
+            ],
+        [sg.Frame('CEP',[ [sg.Input(key='cep_fornecedor', size=(10,30))]], title_location='n'), 
+            sg.Frame('Bairro',[ [sg.Input(key='bairro_fornecedor', size=(17,30))]],title_location='n'),
+            sg.Frame('Número', [ [sg.Input(key='numero_fornecedor', size=(15,30))]], title_location='n'),
+            ], 
+        [sg.Frame('Cidade',[ [sg.Input(key='cidade_fornecedor', size=(15,30))]], title_location='n'),
+         sg.Frame('Estado',[ [sg.Input(key='estado_fornecedor', size=(5,30))]],  title_location='n'),
+         sg.Frame('Complemento',[ [sg.Input(key='complemento_fornecedor', size=(15,30))]],  title_location='n'),
+            ],
+        [sg.Frame('CNPJ',[ [sg.Input(key='cpnj_fornecedor', size=(15,30))]],  title_location='n'),
+         sg.Frame('Inscrição Estadual',[ [sg.Input(key='ie_fornecedor', size=(15,30))]],  title_location='n'),
+         sg.Frame('Telefone',[ [sg.Input(key='telefone_fornecedor', size=(15,30))]],  title_location='n')
+        ],
+      
+       
+        
+        [sg.Button('Cadastrar', key='cadastrar_fornecedor',pad=(10,30))],
     ]
     return sg.Window('Cadastro', layout=layout, size=(600,400), element_justification='center', finalize = True)
 
@@ -269,7 +297,7 @@ tabelaVendas = read_task_venda() #alterar
 
 
 
-janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda = janelaMain(), None, None, None, None, None, None, None, None
+janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor = janelaMain(), None, None, None, None, None, None, None, None, None
 
 
 while True:
@@ -291,6 +319,8 @@ while True:
         print(janela6)
         tabelaProdutos = read_task() #ATUALIZA A TABELA QUANDO MUDA A TELA
         janela6 = consultaProdutos() 
+    elif event == 'Cadastrar Fornecedor':
+        JanelaFornecedor = cadastrarFornecedor()
 
     if event == 'edit':
         try:
@@ -489,7 +519,7 @@ while True:
 
         
         
-    if event == 'Inserir': #INSERI OS VALORES DOS INPUTS NA TABELA
+    if event == 'Inserir' : #INSERI OS VALORES DOS INPUTS NA TABELA
         #REPLACE DA PARTE DE QUANTIDADE
         prod_venda_qntd = values['qnt_produto_venda']
         prod_venda_qntd = prod_venda_qntd.replace(',','')
@@ -497,6 +527,14 @@ while True:
         nova_qntd_produto = novo_qntd[0]
         nova_qntd_produto = nova_qntd_produto.replace('(','')
         nova_qntd_produto = int(nova_qntd_produto)
+
+        #REPLACE DA PARTE DO VALOR UNITARIO 
+        prod_venda_valor_unitario = values['valor_unitario']
+        prod_venda_valor_unitario = prod_venda_valor_unitario.replace(',', '')
+        novo_valor_unitario = prod_venda_valor_unitario.split(".", 1)
+        novo_valor_unitario_produto = novo_valor_unitario[0]
+        novo_valor_unitario_produto = novo_valor_unitario_produto.replace('(','')
+        novo_valor_unitario_produto = int(novo_valor_unitario_produto)
         #REPLACE NA PARTE DO NOME
 
         novo_prod_venda_nome = values['nome_produto_venda'].replace(')','')
@@ -513,24 +551,23 @@ while True:
 
         
         
-    
-        valor_total = float(nova_qntd_produto) * float(values['valor_unitario'])
-        if prod_venda_nome and prod_venda_entrada and prod_venda_desc and prod_venda_qntd and prod_venda_unitario != '':
+        print('---------------')
+        print()
+        valor_total = float(nova_qntd_produto) * float(novo_valor_unitario_produto)
+        if values['nome_produto_venda'] and values['cod_barra_venda'] and values['desc_produto_venda'] and values['qnt_produto_venda'] and values['valor_unitario'] != '':
                 try: #TRATAMENTO DE ERRO
                     prod_codigo = values['cod_barra_venda']
-                    prod_nome = values['nome_produto_venda']
+                    prod_nome = novo_prod_venda_nome #SE EU PEGASSE DO VALUES COMO FIZ ACIMA, ELE TERIA VARIOS () e ,, então peguei oq eu já tinha dado replace acima
                     cursor.execute('SELECT * FROM produtos WHERE nome = ? AND cod_barras = ?', (prod_nome, prod_codigo))
-                    print(prod_codigo)
                     if cursor.fetchall():
-                        tabelVendas.insert(0, [novo_prod_venda_nome,novo_prod_venda_desc,nova_qntd_produto,values['cod_barra_venda'],values['valor_unitario'],valor_total]) #O NMR 0 É PRA INSERIR NA LINHA 0
+                        tabelVendas.insert(0, [novo_prod_venda_nome,novo_prod_venda_desc,nova_qntd_produto,values['cod_barra_venda'],novo_valor_unitario_produto,valor_total]) #O NMR 0 É PRA INSERIR NA LINHA 0
                         window.find_element('box_vendas').Update(tabelaVendas) #ATUALIZAR A TABELA
                         print(tabelVendas)
                     else:
                         sg.popup('Existem informações Incorretas ou não cadastradas no sistema')
                 except ValueError as erro:
                     sg.popup("Algum campos foram preenchidos errado!")
-        else:
-            sg.popup("Erro de cadastro: Existem campos vázios", title='ERRO')
+  
         
 
     if window == janelaVenda and event == sg.WINDOW_CLOSED:
@@ -550,10 +587,22 @@ while True:
             sg.popup('Venda concluida com sucesso')
             print('acabou')
             print(total)
-            cursor.execute("SELECT * FROM saida ORDER BY nmr_nota_fiscal DESC LIMIT 1")
-            result = cursor.fetchone()
-            #nmr_notafiscal_antes = result[0] 
-            nmr_notafiscal = result[0] + 1
+
+            #----------------------------------------------------------------
+            #ESSE CÓDIGO FAZ COM QUE VERIFIQUE SE JÁ EXISTE ALGUM DADO NA TABELA DE SAIDA, SE NÃO EXISTIR ELE VAI DEIXAR A NOTA COMO NMR 1
+            cursor.execute("SELECT * FROM saida WHERE nmr_nota_fiscal = 1")
+            data = cursor.fetchone()
+            if data is None:
+                nmr_notafiscal = 1       
+            else:
+                cursor.execute("SELECT * FROM saida ORDER BY nmr_nota_fiscal DESC LIMIT 1")
+                result = cursor.fetchone() 
+                #nmr_notafiscal_antes = result[0] 
+                nmr_notafiscal = result[0] + 1
+
+            #----------------------------------------------------------------
+                
+     
 
             while x < len(tabelaVendas):
                 
@@ -615,9 +664,6 @@ while True:
         window.Element('desc_produto_venda').Update(data_desc)
 
 
-    
-
-
         #ATUALIZAR INPUT QUANTIDADE
         cod_barra_qnt = cursor.execute(f"SELECT quantidade FROM produtos WHERE cod_barras = '{barras}'")
         data_qnt = ''
@@ -625,16 +671,23 @@ while True:
         banco.commit()
     
     
-        print(data_qnt) 
+        
         window.Element('qnt_produto_venda').Update(data_qnt)
         data_qnt = str(data_qnt)
         data_qnt = data_qnt.replace(',', '')
-        
-       
 
-   
-        
-      
+        #ATUALIZA O INPUT DO VALOR UNITARIO
+        cod_barra_valor_unitario = cursor.execute(f"SELECT valor_unitario FROM produtos WHERE cod_barras = '{barras}'")
+        data_valor_unitario = ''
+        data_valor_unitario = cursor.fetchall()
+    
+        banco.commit()
+
+
+
+        window.Element('valor_unitario').Update(data_valor_unitario)
+        data_valor_unitario = str(data_valor_unitario)
+        data_valor_unitario = data_valor_unitario.replace(',', '')
 
         
         

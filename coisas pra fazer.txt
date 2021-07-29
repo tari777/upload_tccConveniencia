@@ -6,11 +6,13 @@ Checar se a quantidade de produto que sera vendido tem no estoque [NÃO FAZER]
 
 Cadastrar a venda dos produtos (
 Cada produto da venda vai ter o mesmo numero da nota fiscal, então se tiver 3 produtos sendo vendidos
-os 3 vão ter o mesmo número da nota fiscal )
+os 3 vão ter o mesmo número da nota fiscal ) [FEITO]
 
 Cadastrar a entrada dos produtos ( mesma coisa do acima ) 
 
-
-
 Adioncar um jeito para deixar o nmr da notafiscal como 1 quando não existir nenhuma cadastrada antes
-Eu posso checar se exista alguma com o nmr 1, se não der fetch eu crio
+Eu posso checar se exista alguma com o nmr 1, se não der fetch eu crio [FEITO]
+
+Fazer com que não seja possivel colocar coisas além de letras e numeros nos produtos, pois o replace vai bugar
+
+
