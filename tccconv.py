@@ -128,10 +128,10 @@ def cadastrarFornecedor():
             sg.Frame('Número', [ [sg.Input(key='numero_fornecedor', size=(15,30))]], title_location='n'),
             ], 
         [sg.Frame('Cidade',[ [sg.Input(key='cidade_fornecedor', size=(15,30))]], title_location='n'),
-         sg.Frame('Estado',[ [sg.Input(key='estado_fornecedor', size=(5,30))]],  title_location='n'),
+         sg.Frame('Estado',[ [sg.Combo(values=('SP', 'AC', 'RJ'), default_value='SP',  key='estado_fornecedor'),]],  title_location='n'),
          sg.Frame('Complemento',[ [sg.Input(key='complemento_fornecedor', size=(15,30))]],  title_location='n'),
             ],
-        [sg.Frame('CNPJ',[ [sg.Input(key='cpnj_fornecedor', size=(15,30))]],  title_location='n'),
+        [sg.Frame('CNPJ',[ [sg.Input(key='cnpj_fornecedor', size=(15,30))]],  title_location='n'),
          sg.Frame('Inscrição Estadual',[ [sg.Input(key='ie_fornecedor', size=(15,30))]],  title_location='n'),
          sg.Frame('Telefone',[ [sg.Input(key='telefone_fornecedor', size=(15,30))]],  title_location='n')
         ],
@@ -211,6 +211,47 @@ def add_produto():
             print(erro)
     else:
         sg.popup("Erro de cadastro: Existem campos vázios", title='ERRO')
+def add_fornecedor():
+    nome_fornecedor = values['nome_fornecedor']
+    razao_social_fornecedor = values['razao_social_fornecedor']
+    rua_fornecedor = values['rua_fornecedor']
+    cep_fornecedor = values['cep_fornecedor']
+    bairro_fornecedor = values['bairro_fornecedor']
+    numero_fornecedor = values['numero_fornecedor']
+    cidade_fornecedor = values['cidade_fornecedor']
+    estado_fornecedor = values['estado_fornecedor']
+    complemento_fornecedor = values['complemento_fornecedor']
+    cnpj_fornecedor = values['cnpj_fornecedor']
+    ie_fornecedor = values['ie_fornecedor']
+    telefone_fornecedor = values['telefone_fornecedor']
+    if nome_fornecedor and razao_social_fornecedor and rua_fornecedor and cep_fornecedor and bairro_fornecedor and numero_fornecedor and cidade_fornecedor and estado_fornecedor and complemento_fornecedor and cnpj_fornecedor and ie_fornecedor and telefone_fornecedor != '':
+        try:
+            cursor.execute('SELECT * FROM fornecedores WHERE nome = ? OR cnpj = ?', (nome_fornecedor, cnpj_fornecedor))
+            if cursor.fetchall():
+                sg.popup('Erro: Fornecedor já cadastrado no sistema!')
+            else:
+                cursor.execute(f"INSERT INTO fornecedores VALUES(Null, '{nome_fornecedor}', '{razao_social_fornecedor}', '{rua_fornecedor}', '{cep_fornecedor}', '{bairro_fornecedor}', '{numero_fornecedor}', '{cidade_fornecedor}', '{estado_fornecedor}', '{complemento_fornecedor}', '{cnpj_fornecedor}', '{ie_fornecedor}', '{telefone_fornecedor}')")
+                banco.commit()
+                sg.popup("Fornecedor cadastrado com sucesso!", title="Sucesso")
+        except ValueError as erro:
+            sg.popup("Algum campo foi preenchido errado!")
+            print(erro)
+    else:
+        sg.popup("Erro de cadastro: Existem campos vázios", title='ERRO')
+
+                
+def consultaFornecedores():
+    sg.theme('Reddit')
+    layout2 = [
+        [sg.Button('Voltar', key='voltar_fornecedor')],
+        [sg.Text('Produtos cadastrados')],
+        [sg.Table(tabelaFornecedores, size = (500,15), key='box_fornecedor',headings=['CódigoForn','Nome', 'Razão', 'Rua', 'CEP', 'Bairro', 'Número', 'Cidade','Estado', 'Complemento', 'Cnpj', 'IE', 'Telefone'],auto_size_columns=True,max_col_width=35, vertical_scroll_only=False)],
+        [sg.Button('Filtra', key='nomesfiltrar_fornecedor'),sg.Button('Tirar Filtro', key='tirarFiltro_fornecedor'), sg.Button('Selecionar', key = 'select_fornecedor'), sg.Button('Deletar', key ='delete_fornecedor'), sg.Button('Editar', key='edit_fornecedor')],
+        [sg.Input(key='filtroProcurar_fornecedor')],
+        [sg.Radio('ID','filters',key = 'radioID_fornecedor', default=True), sg.Radio('Nome','filters',key = 'radioNome_fornecedor'), sg.Radio('CNPJ','filters',key = 'radioCNPJ_fornecedor')]
+    ]   
+
+    return sg.Window('Tela Lista', layout=layout2, size=(800,500), element_justification='center', finalize = True)
 
 def consultaProdutos():
     sg.theme('Reddit')
@@ -260,15 +301,27 @@ filtro = '*' #Define qual sera o filtro usado, o padrão é não filtrar, ou sej
 
 filtroColuna = ''
 filtro_procurar = ''
+filtroColuna_fornecedor = ''
+filtro_procurar_fornecedor = ''
 
 def filtrarConteudo():
     cursor.execute(f'''SELECT * FROM produtos WHERE {filtroColuna} LIKE "%{filtro_procurar}%"''') #É PRECISO USAR ASPAS ENTRE O FILTRO PROCURAR, POIS SE NÃO N DA CERTO ASPAS DUPLAS NO CASO ) ESSE LIKE E AS % entre o texto faz com que ele procure algo próximo
     data = cursor.fetchall()
     banco.commit()
     return data
+
+def filtrarConteudoFornecedor():
+    cursor.execute(f'''SELECT * FROM fornecedores WHERE {filtroColuna_fornecedor} LIKE "%{filtro_procurar_fornecedor}%"''') #É PRECISO USAR ASPAS ENTRE O FILTRO PROCURAR, POIS SE NÃO N DA CERTO ASPAS DUPLAS NO CASO ) ESSE LIKE E AS % entre o texto faz com que ele procure algo próximo
+    data = cursor.fetchall()
+    banco.commit()
+    return data
     
 def deletarBanco():
     cursor.execute(f"DELETE FROM produtos WHERE nome = '{nomeDeletar}'")
+    banco.commit()
+
+def deletarBancoFornecedor():
+    cursor.execute(f"DELETE FROM fornecedores WHERE nome = '{nomeDeletar}'")
     banco.commit()
   
 filtro = '*' #Define qual sera o filtro usado, o padrão é não filtrar, ou seja, mostrar todos
@@ -285,19 +338,29 @@ def read_task_venda():
     data = teste
     return data
 
+def read_task_fornecedor():
+    cursor.execute(f'''SELECT {filtro} FROM fornecedores''')
+    data = cursor.fetchall()
+    banco.commit()
+    return data
+
 
  
    
         
 filtroColuna = ''
-filtro_procurar = ''
+filtroColuna_fornecedor = ''
 
+filtro_procurar = ''
+filtro_procurar_fornecedor = ''
+
+tabelaFornecedores = read_task_fornecedor()
 tabelaProdutos = read_task() 
 tabelaVendas = read_task_venda() #alterar
 
 
 
-janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor = janelaMain(), None, None, None, None, None, None, None, None, None
+janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor, janelaVerFornecedor = janelaMain(), None, None, None, None, None, None, None, None, None, None
 
 
 while True:
@@ -317,10 +380,14 @@ while True:
         janela5 == cadastrarProduto()
     elif event == 'Consultar Produtos':
         print(janela6)
-        tabelaProdutos = read_task() #ATUALIZA A TABELA QUANDO MUDA A TELA
+        tabelaProdutos = read_task() #ATUALIZA A TABELA QUANDO MUDA A TELA ------- IMPORTANTE COLOCAR ISSO ANTES DE ABRIR JANELA
         janela6 = consultaProdutos() 
     elif event == 'Cadastrar Fornecedor':
         JanelaFornecedor = cadastrarFornecedor()
+    elif event == 'Ver Fornecedores':
+        tabelaFornecedores = read_task_fornecedor() #ATUALIZA A TABELA QUANDO ABRE A JENELA ------- IMPORTANTE COLOCAR ISSO ANTES DE ABRIR JANELA
+        janelaVerFornecedor = consultaFornecedores()
+        print('fornecedor')
 
     if event == 'edit':
         try:
@@ -389,6 +456,9 @@ while True:
 
     if event == 'Voltar':
         janela6.hide()
+
+    if event == 'voltar_fornecedor':
+        janelaVerFornecedor.hide()
 
     
     if event == 'Backup':
@@ -473,10 +543,64 @@ while True:
         except IndexError as erro:
             sg.popup('Erro de Indice: Selecione algum item da tabela')
 
+
+        #---------------------------------------------------------------------------------------------
+        #USAR FILTRO CONSULTA fornecedores
+    if event == 'nomesfiltrar_fornecedor' and window == janelaVerFornecedor:
+        if values['radioID_fornecedor'] == True: ##Se o botão do NOME estiver selecionado, ele procura por user
+            filtroColuna_fornecedor = 'cod_fornecedor'
+        elif values['radioNome_fornecedor'] == True: ##Se o botão de SENHA estiver selecionado, ele procura por senha
+            filtroColuna_fornecedor = 'nome'
+        elif values['radioCNPJ_fornecedor'] == True: ##Se o botão do EMAIL estiver selecionado, ele procura por EMAIL
+            filtroColuna_fornecedor = 'cnpj'
+        filtro_procurar_fornecedor = values['filtroProcurar_fornecedor']
+        print(f'procurar: {filtro_procurar_fornecedor}')
+        print(f'coluna: {filtroColuna_fornecedor}')
+        tabelaFornecedores = filtrarConteudoFornecedor()
+        window.find_element('box_fornecedor').Update(tabelaFornecedores)
+
+    #SE TIRAR O FILTRO
+    if event == 'tirarFiltro_fornecedor' and window == janelaVerFornecedor:
+        tabelaFornecedores = read_task_fornecedor()
+        window.find_element('box_fornecedor').Update(tabelaFornecedores)
+    if event == 'select_fornecedor' and window == janelaVerFornecedor:
+        #TRATAMENTO DE ERRO
+        try:
+            if tabelaFornecedores:
+                x = values['box_fornecedor'][0] #ISSO FAZ COM QUE SEJA POSSIVEL ESCOLHER UM ITEM DA LISTA CLICANDO
+                print(x)
+                print(tabelaFornecedores[x])
+                sg.popup(f'Voce selecionou {tabelaFornecedores[x]}')
+
+        except IndexError as erro:
+            sg.popup('Erro de Indice: Selecione algum item da tabela')
+
+
+    if event == 'delete' and window == janelaVerFornecedor: 
+            try:
+                if tabelaFornecedores:
+                    deletar = values['box_fornecedor'][0]
+                    ofc = tabelaFornecedores[deletar]
+                    nomeDeletar = ofc[1] #ISSO MOSTRA O PARAMETRO 1 DENTRO DA TUPLA
+                    print(nomeDeletar) 
+                    deletarBancoFornecedor()
+                    tabelaFornecedores= read_task()  #ATUALIZA OS DADOS
+                    window.find_element('box_fornecedor').Update(tabelaFornecedores) #ATUALIZA OS DADOS
+                    sg.popup(f'O produto {nomeDeletar} excluido com sucesso!')
+                    
+
+            except IndexError as erro:
+                sg.popup('Erro de Indice: Selecione algum item da tabela')
+
+    #-----------------------------------------------------------------------------------
+
+
     if event == 'Cadastrar': #BOTÃO DA TELA DE CADASTRO DE ENTRADA
         add_entrada()
     if event == 'cadastrar_produto': #BOTÃO DA TELA DE CADASTRO DE PRODUTO
-        add_produto()     
+        add_produto()   
+    if event == 'cadastrar_fornecedor':
+        add_fornecedor()  
 
     if event == 'Cancelar':
         janela3.hide()
@@ -573,6 +697,8 @@ while True:
     if window == janelaVenda and event == sg.WINDOW_CLOSED:
             tabelVendas.clear() #LIMPAR A TABELA QUANDO FECHAR A JANELA
             print('como esta'+ str(tabelVendas))
+
+    
         
 
 
@@ -640,6 +766,9 @@ while True:
         result = cursor.fetchone()
         nmr_notafiscal_antes = result
         print(nmr_notafiscal_antes)
+
+
+        
        
         
 
