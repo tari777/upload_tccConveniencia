@@ -65,7 +65,7 @@ def janelaMain():
     layout = [
         [sg.Menu(menu_def, tearoff=False, key='-MENU BAR-')],
         [sg.Text('Sistema de Cadastro')],
-        [sg.Frame('AAAAAAA', [[ sg.Image('gay.png')]])]
+        [sg.Frame('AAAAAAA', [[ sg.Image('C:/Users/mathe/Desktop/tcc conveniencia/gay.png')]])]
         #[sg.Listbox(name,size = (30,10), key='box')],
     ]
     return sg.Window('Tela Lista', layout=layout, size=(700,500), element_justification='center', finalize = True)
@@ -128,7 +128,7 @@ def cadastrarFornecedor():
             sg.Frame('Número', [ [sg.Input(key='numero_fornecedor', size=(15,30))]], title_location='n'),
             ], 
         [sg.Frame('Cidade',[ [sg.Input(key='cidade_fornecedor', size=(15,30))]], title_location='n'),
-         sg.Frame('Estado',[ [sg.Combo(values=('SP', 'AC', 'RJ'), default_value='SP',  key='estado_fornecedor'),]],  title_location='n'),
+         sg.Frame('Estado',[ [sg.Combo(values=('AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB','PR', 'PE', 'PI','RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'), default_value='SP',  key='estado_fornecedor'),]],  title_location='n'),
          sg.Frame('Complemento',[ [sg.Input(key='complemento_fornecedor', size=(15,30))]],  title_location='n'),
             ],
         [sg.Frame('CNPJ',[ [sg.Input(key='cnpj_fornecedor', size=(15,30))]],  title_location='n'),
@@ -163,6 +163,34 @@ def editarProduto():
         [sg.Button('Alterar', key='alterar_produto',pad=(10,30))],
     ]
     return sg.Window('Editar produto', layout=layout, size=(600,400), element_justification='center', finalize = True)
+
+def editarFornecedor():
+    sg.theme('Reddit')
+    layout = [
+        [sg.Text('Alterar Fornecedor')],
+        #Mesma linha
+        [sg.Frame('Nome',[ [sg.Input(nome_fornecedor,key='nome_fornecedor', size=(15,30))]],title_color='black', title_location='n'), 
+            sg.Frame('Razão Social',[ [sg.Input(razao_fornecedor ,key='razao_social_fornecedor', size=(15,30))]],title_location='n'),   
+            sg.Frame('Rua',[ [sg.Input(rua_fornecedor, key='rua_fornecedor', size=(15,30))]], title_location='n'),
+            ],
+        [sg.Frame('CEP',[ [sg.Input(cep_fornecedor, key='cep_fornecedor', size=(10,30))]], title_location='n'), 
+            sg.Frame('Bairro',[ [sg.Input( bairro_fornecedor,key='bairro_fornecedor', size=(17,30))]],title_location='n'),
+            sg.Frame('Número', [ [sg.Input(numero_fornecedor, key='numero_fornecedor', size=(15,30))]], title_location='n'),
+            ], 
+        [sg.Frame('Cidade',[ [sg.Input(cidade_fornecedor, key='cidade_fornecedor', size=(15,30))]], title_location='n'),
+         sg.Frame('Estado',[ [sg.Combo(values=('AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB','PR', 'PE', 'PI','RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'), default_value=estado_fornecedor,  key='estado_fornecedor'),]],  title_location='n'),
+         sg.Frame('Complemento',[ [sg.Input(complemento_fornecedor, key='complemento_fornecedor', size=(15,30))]],  title_location='n'),
+            ],
+        [sg.Frame('CNPJ',[ [sg.Input(cnpj_fornecedor, key='cnpj_fornecedor', size=(15,30))]],  title_location='n'),
+         sg.Frame('Inscrição Estadual',[ [sg.Input(ie_fornecedor, key='ie_fornecedor', size=(15,30))]],  title_location='n'),
+         sg.Frame('Telefone',[ [sg.Input(telefone_fornecedor, key='telefone_fornecedor', size=(15,30))]],  title_location='n')
+        ],
+      
+       
+        
+        [sg.Button('Alterar', key='alterar_fornecedor',pad=(10,30))],
+    ]
+    return sg.Window('Alterar Fornecedor', layout=layout, size=(600,400), element_justification='center', finalize = True)
 
 
 def add_entrada():
@@ -360,7 +388,7 @@ tabelaVendas = read_task_venda() #alterar
 
 
 
-janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor, janelaVerFornecedor = janelaMain(), None, None, None, None, None, None, None, None, None, None
+janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor, janelaVerFornecedor, janelaEditarFornecedor = janelaMain(), None, None, None, None, None, None, None, None, None, None, None
 
 
 while True:
@@ -576,7 +604,7 @@ while True:
             sg.popup('Erro de Indice: Selecione algum item da tabela')
 
 
-    if event == 'delete' and window == janelaVerFornecedor: 
+    if event == 'delete_fornecedor' and window == janelaVerFornecedor: 
             try:
                 if tabelaFornecedores:
                     deletar = values['box_fornecedor'][0]
@@ -591,6 +619,78 @@ while True:
 
             except IndexError as erro:
                 sg.popup('Erro de Indice: Selecione algum item da tabela')
+
+
+    if event == 'edit_fornecedor' and window == janelaVerFornecedor:
+        try:
+            if tabelaFornecedores:
+                deletar = values['box_fornecedor'][0] #ISSO FAZ COM QUE SEJA POSSIVEL ESCOLHER UM ITEM DA LISTA CLICANDO
+                ofc = tabelaFornecedores[deletar]
+                nome_fornecedor = ofc[1] #ISSO MOSTRA O PARAMETRO 1 DENTRO DA TUPLA  ----- SERVE PARA PASSAR AS INFOS PRO INPUT DEFAULT TEXT
+                razao_fornecedor = ofc[2] #ISSO MOSTRA O PARAMETRO 2 DENTRO DA TUPLA ----- SERVE PARA PASSAR AS INFOS PRO INPUT DEFAULT TEXT
+                rua_fornecedor = ofc[3] #ISSO MOSTRA O PARAMETRO 3  DENTRO DA TUPLA ----- SERVE PARA PASSAR AS INFOS PRO INPUT DEFAULT TEXT
+                cep_fornecedor = ofc[4]
+                bairro_fornecedor = ofc[5]
+                numero_fornecedor = ofc[6]
+                cidade_fornecedor = ofc[7]
+                estado_fornecedor = ofc[8]
+                complemento_fornecedor = ofc[9]
+                cnpj_fornecedor = ofc[10]
+                ie_fornecedor = ofc[11]
+                telefone_fornecedor = ofc[12]
+                print(telefone_fornecedor)
+                
+                janelaEditarFornecedor = editarFornecedor()
+                window.close() #FECHA A TELA DE LISTA DE PRODUTOS
+        except IndexError as erro:
+            sg.popup('Erro de Indice: Selecione algum item da tabela')
+
+    if event == 'alterar_fornecedor' and window == janelaEditarFornecedor:
+       
+        #IDENTIFICA OS NOVO CAMPO PRA ALTERAR
+        n_nome_fornecedor =  values['nome_fornecedor'] 
+        n_razao_fornecedor =  values['razao_social_fornecedor']
+        n_rua_fornecedor =  values['rua_fornecedor']
+        n_cep_fornecedor = values['cep_fornecedor']
+        n_bairro_fornecedor = values['bairro_fornecedor']
+        n_numero_fornecedor = values['numero_fornecedor']
+        n_cidade_fornecedor = values['cidade_fornecedor']
+        n_estado_fornecedor = values ['estado_fornecedor']
+        n_complemento_fornecedor = values ['complemento_fornecedor']
+        n_cnpj_fornecedor = values ['cnpj_fornecedor']
+        n_ie_fornecedor = values ['ie_fornecedor']
+        n_telefone_fornecedor = values ['telefone_fornecedor']
+
+       
+        
+        
+
+        if n_nome_fornecedor and n_razao_fornecedor and n_rua_fornecedor and n_cep_fornecedor and n_bairro_fornecedor and n_numero_fornecedor and n_cidade_fornecedor and n_estado_fornecedor and n_complemento_fornecedor and n_cnpj_fornecedor and n_ie_fornecedor and n_telefone_fornecedor != '':
+            try: #TRATAMENTO DE ERRO
+                cursor.execute(f"UPDATE fornecedores SET nome = '{n_nome_fornecedor}' WHERE nome = '{nome_fornecedor}'")
+                cursor.execute(f"UPDATE fornecedores SET razao_social = '{n_razao_fornecedor}' WHERE nome = '{nome_fornecedor}'")
+                cursor.execute(f"UPDATE fornecedores SET rua = '{n_rua_fornecedor}' WHERE nome = '{nome_fornecedor}'")
+                cursor.execute(f"UPDATE fornecedores SET cep = '{n_cep_fornecedor}' WHERE nome = '{nome_fornecedor}'")
+                cursor.execute(f"UPDATE fornecedores SET bairro = '{n_bairro_fornecedor}' WHERE nome = '{nome_fornecedor}'")
+                cursor.execute(f"UPDATE fornecedores SET numero = '{n_numero_fornecedor}' WHERE nome = '{nome_fornecedor}'")
+                cursor.execute(f"UPDATE fornecedores SET cidade = '{n_cidade_fornecedor}' WHERE nome = '{nome_fornecedor}'")
+                cursor.execute(f"UPDATE fornecedores SET estado = '{n_estado_fornecedor}' WHERE nome = '{nome_fornecedor}'")  
+                cursor.execute(f"UPDATE fornecedores SET complemento = '{n_complemento_fornecedor}' WHERE nome = '{nome_fornecedor}'") 
+                cursor.execute(f"UPDATE fornecedores SET complemento = '{n_cnpj_fornecedor}' WHERE nome = '{nome_fornecedor}'") 
+                cursor.execute(f"UPDATE fornecedores SET complemento = '{n_ie_fornecedor}' WHERE nome = '{nome_fornecedor}'") 
+                cursor.execute(f"UPDATE fornecedores SET complemento = '{n_telefone_fornecedor}' WHERE nome = '{nome_fornecedor}'") 
+                banco.commit()  
+                
+                window.close() #FECHA A TELA DE EDIÇÃO DE PRODUTOS / EU USEI ISSO POIS ELE CONSEGUE ATUALIZAR QUANDO ABRE A TELA, DIFERENTE DO HIDE E UNHIDE
+                
+                tabelaFornecedores = read_task_fornecedor()
+                janelaVerFornecedor = consultaFornecedores()
+                
+
+            except ValueError as erro:
+                sg.popup("Algum campo foi preenchido errado!")
+        else:
+            sg.popup("Erro de cadastro: Existem campos vázios", title='ERRO')
 
     #-----------------------------------------------------------------------------------
 
