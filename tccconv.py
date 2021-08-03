@@ -13,15 +13,26 @@ import pandas as pd
 from datetime import datetime
 
 total = 0
+total_entrada = 0
 prod_venda_nome = ''
 prod_venda_desc = ''
 prod_venda_qntd = ''
 prod_venda_entrada = ''
 prod_venda_unitario = ''
+
+prod_entrada_nome = ''
+prod_entrada_quantidade = ''
+prod_entrada_fornecedor = ''
+prod_entrada_notaFiscal = ''
+prod_entrada_codigoBarras = ''
+prod_entrada_data = ''
+prod_entrada_valorUnitario = ''
+
 testo = 'fodase'
 i = 0
 x = 0
 tabelVendas = []
+tabelEntradas = []
 if not os.path.exists('C:/pastaTCC'):
     os.makedirs('C:/pastaTCC')
 banco = sqlite3.connect('C:/pastaTCC/tcc_database.db')
@@ -33,7 +44,7 @@ cursor = banco.cursor()
 
 cursor.execute("CREATE TABLE IF NOT EXISTS produtos (cod_produto INTEGER PRIMARY KEY AUTOINCREMENT, nome text, quantidade real, cod_barras text, desc text, ncm text, icms text, valor_entrada float, valor_unitario float, valor_total float)")
 cursor.execute("CREATE TABLE IF NOT EXISTS fornecedores (cod_fornecedor INTEGER PRIMARY KEY AUTOINCREMENT, nome text, razao_social text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text, cnpj text, insc_estadual text, telefone text)")
-cursor.execute("CREATE TABLE IF NOT EXISTS entrada (nmr_nota_fiscal TEXT PRIMARY KEY, nome text, nome_fornecedor text, cod_barras text, quantidade integer, data_entrada text, valor_unitario real, valor_total real)")
+cursor.execute("CREATE TABLE IF NOT EXISTS entrada (nmr_nota_fiscal TEXT, nome text, nome_fornecedor text, cod_barras text, quantidade integer, data_entrada text, valor_unitario real, valor_total real)")
 cursor.execute("CREATE TABLE IF NOT EXISTS saida (nmr_nota_fiscal INTEGER, nome text, cod_barras text, quantidade integer, data_saida text, valor_unitario real, valor_total real)")
 cursor.execute("CREATE TABLE IF NOT EXISTS conveniencia (razao_social TEXT PRIMARY KEY, nome text, nome_fantasia text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text,  cnpj text, insc_estadual text, telefone text)")
 
@@ -76,19 +87,19 @@ def cadastrarEntrada():
     layout = [
         [sg.Text('Cadastro de Entrada')],
         #Mesma linha
-        [sg.Frame('Nome Produto',[ [sg.Input(key='nome_produto', size=(15,30))]],title_color='black', title_location='n'), 
-            sg.Frame('Quantidade',[ [sg.Input(key='qnt_produto', size=(15,30))]],title_location='n'),   
-            sg.Frame('Nome Fornecedor',[ [sg.Input(key='nome_fornecedor', size=(15,70))]], title_location='n'),
+        [sg.Frame('Nome Produto',[ [sg.Button('Abrir', key = 'abrir_produtos', size=(5,1)),sg.Input(prod_entrada_nome,key='nome_produto_entrada', size=(15,30))]],title_color='black', title_location='n'), 
+            sg.Frame('Quantidade',[ [sg.Input(prod_entrada_quantidade,key='qnt_entrada_produto', size=(15,30))]],title_location='n'),   
+            sg.Frame('Nome Fornecedor',[ [sg.Button('Abrir', key='abrir_fornecedor', size=(5,1)), sg.Input(prod_entrada_fornecedor ,key='nome_fornecedor', size=(15,70))]], title_location='n'),
             ],
-        [sg.Frame('Número Nota Fiscal',[ [sg.Input(key='nmr_notafiscal', size=(15,30))]], title_location='n'), 
-            sg.Frame('Código de Barras',[ [sg.Input(key='cod_barra', size=(15,30))]], title_location='n'), 
-            sg.Frame('Data',[ [sg.Input(key='data_produto', size=(20,70)), sg.Button('Date', key='data_entrada')]], title_location='n'),
+        [sg.Frame('Número Nota Fiscal',[ [sg.Input(prod_entrada_notaFiscal, key='nmr_notafiscal_entrada', size=(15,30))]], title_location='n'), 
+            sg.Frame('Código de Barras',[ [sg.Input(prod_entrada_codigoBarras, key='cod_barra_entrada', size=(15,30))]], title_location='n'), 
+            sg.Frame('Data',[ [sg.Input(prod_entrada_data, key='data_produto_entrada', size=(20,70)), sg.Button('Date', key='data_entrada_ent')]], title_location='n'),
             ],
-        [sg.Frame('Valor Unitário',[ [sg.Input(key='valor_unitario', size=(15,30))]], title_location='n')],
-        [sg.Table(tabelaVendas, key = 'box_vendas', headings=['Nota Fiscal','Nome', 'Quantidade', 'Nome Fornecedor', 'Código Barras','Data', 'Valor Unitário', 'Valor Total'], auto_size_columns=False, col_widths=[10], vertical_scroll_only=False)],
+        [sg.Frame('Valor Unitário',[ [sg.Input(prod_entrada_valorUnitario, key='valor_unitario_entrada', size=(15,30))]], title_location='n'), sg.Button('Inserir', key='inserir_entrada', size=(5,1))],
+        [sg.Table(tabelEntradas, key = 'box_entrada', headings=['Nota Fiscal','Nome', 'Quantidade', 'Nome Fornecedor', 'Código Barras','Data', 'Valor Unitário', 'Valor Total'], auto_size_columns=False, col_widths=[10], vertical_scroll_only=False)],
         
         
-        [sg.Button('Cadastrar',pad=(10,30))],
+        [sg.Button('Cadastrar', key='concluir_entrada', pad=(10,30))],
     ]
     return sg.Window('Cadastro', layout=layout, size=(600,500), element_justification='center', finalize = True)
 
@@ -194,26 +205,10 @@ def editarFornecedor():
 
 
 def add_entrada():
-    ent_nome_produto = values['nome_produto']
-    ent_qnt_produto = values['qnt_produto']
-    ent_nome_fornecedor = values['nome_fornecedor']
-    ent_nmr_notafiscal = values['nmr_notafiscal']
-    ent_cod_barra = values['cod_barra']
-    ent_data_produto = values['data_produto']
-    ent_valor_entrada = values['valor_entrada']
-    ent_valor_unitario = values['valor_unitario']
-    if ent_nome_produto and ent_qnt_produto and ent_nome_fornecedor and ent_nmr_notafiscal and ent_cod_barra and ent_data_produto and ent_valor_entrada and ent_valor_unitario != '':
-        try: #TRATAMENTO DE ERRO
-            ent_valor_total = float(ent_valor_unitario) * float(ent_qnt_produto)
+
             cursor.execute(f"INSERT INTO entrada VALUES('{ent_nmr_notafiscal}', '{ent_nome_produto}','{ent_nome_fornecedor}','{ent_qnt_produto}','{ent_data_produto}', '{ent_valor_entrada}','{ent_valor_unitario}','{ent_valor_total}')")
             banco.commit()
-            sg.popup("Entrada cadastrada com sucesso!", title="Sucesso")
-        except ValueError as erro:
-            sg.popup("Algum campo foi preenchido errado!")
-        except sqlite3.IntegrityError as erro:
-            sg.popup ("O campo [NÚMERO NOTA FISCAL] já existe no sistema!")
-    else:
-        sg.popup("Erro de cadastro: Existem campos vázios", title='ERRO')
+    
 
 def add_produto():
     prod_nome_produto = values['nome_produto']
@@ -272,7 +267,7 @@ def consultaFornecedores():
     sg.theme('Reddit')
     layout2 = [
         [sg.Button('Voltar', key='voltar_fornecedor')],
-        [sg.Text('Produtos cadastrados')],
+        [sg.Text('Fornecedores')],
         [sg.Table(tabelaFornecedores, size = (500,15), key='box_fornecedor',headings=['CódigoForn','Nome', 'Razão', 'Rua', 'CEP', 'Bairro', 'Número', 'Cidade','Estado', 'Complemento', 'Cnpj', 'IE', 'Telefone'],auto_size_columns=True,max_col_width=35, vertical_scroll_only=False)],
         [sg.Button('Filtra', key='nomesfiltrar_fornecedor'),sg.Button('Tirar Filtro', key='tirarFiltro_fornecedor'), sg.Button('Selecionar', key = 'select_fornecedor'), sg.Button('Deletar', key ='delete_fornecedor'), sg.Button('Editar', key='edit_fornecedor')],
         [sg.Input(key='filtroProcurar_fornecedor')],
@@ -300,6 +295,31 @@ def consultaProdutosVenda():
         [sg.Text('Produtos cadastrados')],
         [sg.Table(tabelaProdutos, size = (500,15), key='box_produtos_venda',headings=['CódigoProd','Nome', 'Quantidade', 'Cod_barras', 'Descrição', 'NCM', 'ICMS', 'Valor_Entrada','Valor_Uni', 'Valor_Total'],auto_size_columns=True,max_col_width=35, vertical_scroll_only=False)],
         [sg.Button('Filtra', key='nomesfiltrar'),sg.Button('Tirar Filtro', key='tirarFiltro'), sg.Button('Selecionar', key = 'select_vendas')],
+        [sg.Input(key='filtroProcurar')],
+        [sg.Radio('ID','filters',key = 'radioID', default=True), sg.Radio('Nome','filters',key = 'radioNome'), sg.Radio('CodBarras','filters',key = 'radioCODBARRAS')]
+    ]   
+
+    return sg.Window('Tela Lista', layout=layout2, size=(800,500), element_justification='center', finalize = True)
+
+def consultaFornecedoresEntrada():
+    sg.theme('Reddit')
+    layout2 = [
+        [sg.Button('Voltar', key='voltar_fornecedor')],
+        [sg.Text('Fornecedores')],
+        [sg.Table(tabelaFornecedores, size = (500,15), key='box_fornecedor',headings=['CódigoForn','Nome', 'Razão', 'Rua', 'CEP', 'Bairro', 'Número', 'Cidade','Estado', 'Complemento', 'Cnpj', 'IE', 'Telefone'],auto_size_columns=True,max_col_width=35, vertical_scroll_only=False)],
+        [sg.Button('Filtra', key='nomesfiltrar_fornecedor'),sg.Button('Tirar Filtro', key='tirarFiltro_fornecedor'), sg.Button('Selecionar', key = 'select_fornecedor_entrada')],
+        [sg.Input(key='filtroProcurar_fornecedor')],
+        [sg.Radio('ID','filters',key = 'radioID_fornecedor', default=True), sg.Radio('Nome','filters',key = 'radioNome_fornecedor'), sg.Radio('CNPJ','filters',key = 'radioCNPJ_fornecedor')]
+    ]   
+
+    return sg.Window('Tela Lista', layout=layout2, size=(800,500), element_justification='center', finalize = True)
+
+def consultaProdutosEntrada():
+    sg.theme('Reddit')
+    layout2 = [
+        [sg.Text('Produtos cadastrados')],
+        [sg.Table(tabelaProdutos, size = (500,15), key='box_produtos_entrada',headings=['CódigoProd','Nome', 'Quantidade', 'Cod_barras', 'Descrição', 'NCM', 'ICMS', 'Valor_Entrada','Valor_Uni', 'Valor_Total'],auto_size_columns=True,max_col_width=35, vertical_scroll_only=False)],
+        [sg.Button('Filtra', key='nomesfiltrar'),sg.Button('Tirar Filtro', key='tirarFiltro'), sg.Button('Selecionar', key = 'select_entrada')],
         [sg.Input(key='filtroProcurar')],
         [sg.Radio('ID','filters',key = 'radioID', default=True), sg.Radio('Nome','filters',key = 'radioNome'), sg.Radio('CodBarras','filters',key = 'radioCODBARRAS')]
     ]   
@@ -366,6 +386,11 @@ def read_task_venda():
     data = teste
     return data
 
+def read_task_entrada():
+    teste = tabelEntradas
+    data = teste
+    return data
+
 def read_task_fornecedor():
     cursor.execute(f'''SELECT {filtro} FROM fornecedores''')
     data = cursor.fetchall()
@@ -385,10 +410,11 @@ filtro_procurar_fornecedor = ''
 tabelaFornecedores = read_task_fornecedor()
 tabelaProdutos = read_task() 
 tabelaVendas = read_task_venda() #alterar
+tabelaEntradas = read_task_entrada()
 
 
 
-janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor, janelaVerFornecedor, janelaEditarFornecedor = janelaMain(), None, None, None, None, None, None, None, None, None, None, None
+janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor, janelaVerFornecedor, janelaEditarFornecedor, janelaProdutosEntrada, janelaFornecedorEntrada = janelaMain(), None, None, None, None, None, None, None, None, None, None, None, None, None
 
 
 while True:
@@ -413,9 +439,12 @@ while True:
     elif event == 'Cadastrar Fornecedor':
         JanelaFornecedor = cadastrarFornecedor()
     elif event == 'Ver Fornecedores':
-        tabelaFornecedores = read_task_fornecedor() #ATUALIZA A TABELA QUANDO ABRE A JENELA ------- IMPORTANTE COLOCAR ISSO ANTES DE ABRIR JANELA
-        janelaVerFornecedor = consultaFornecedores()
-        print('fornecedor')
+        try:
+            tabelaFornecedores = read_task_fornecedor() #ATUALIZA A TABELA QUANDO ABRE A JENELA ------- IMPORTANTE COLOCAR ISSO ANTES DE ABRIR JANELA
+            janelaVerFornecedor = consultaFornecedores()
+        except KeyError:
+            sg.popup('Não existem fornecedores cadastrados!')
+  
 
     if event == 'edit':
         try:
@@ -612,9 +641,9 @@ while True:
                     nomeDeletar = ofc[1] #ISSO MOSTRA O PARAMETRO 1 DENTRO DA TUPLA
                     print(nomeDeletar) 
                     deletarBancoFornecedor()
-                    tabelaFornecedores= read_task()  #ATUALIZA OS DADOS
+                    tabelaFornecedores= read_task_fornecedor()  #ATUALIZA OS DADOS
                     window.find_element('box_fornecedor').Update(tabelaFornecedores) #ATUALIZA OS DADOS
-                    sg.popup(f'O produto {nomeDeletar} excluido com sucesso!')
+                    sg.popup(f'O fornecedor {nomeDeletar} excluido com sucesso!')
                     
 
             except IndexError as erro:
@@ -712,6 +741,13 @@ while True:
             day, monthh, year = data_adicionar
         window['data_produto'].update(f"{monthh:0>2d}-{day:0>2d}-{year}")
 
+    if event == 'data_entrada_ent':
+        data_add = sg.popup_get_date(close_when_chosen=True)
+        if data_add:
+            day, monthh, year = data_add
+        window['data_produto_entrada'].update(f"{monthh:0>2d}-{day:0>2d}-{year}")
+            
+
     if event == 'Vender Produto':
         janelaVenda = venderProduto()
         
@@ -721,6 +757,50 @@ while True:
         janelaProdutosVenda = consultaProdutosVenda()
         window.close()
         #window['nome_produto_venda'].update(prod_nome_produto)
+
+    if window == janela4 and event == 'abrir_produtos':
+        tabelaProdutos = read_task()
+        janelaProdutosEntrada = consultaProdutosEntrada()
+        window.close()
+
+    if window == janela4 and event == 'abrir_fornecedor':
+        tabelaFornecedores = read_task_fornecedor()
+        janelaFornecedorEntrada = consultaFornecedoresEntrada()
+        window.close()
+
+    if window == janelaFornecedorEntrada:
+        try:
+            if tabelaFornecedores:
+                linha = values['box_fornecedor'][0]
+                ofc = tabelaFornecedores[linha]
+
+                if event == 'select_fornecedor_entrada':
+                    prod_entrada_fornecedor = ofc[1]
+                    janela4 = cadastrarEntrada()
+                    window.close()
+
+        except IndexError as erro:
+            pass
+
+    if window == janelaProdutosEntrada: #MOSTRAR LINHA CLICADA
+        try:
+            if tabelaProdutos:
+                linha = values['box_produtos_entrada'][0] #ISSO FAZ COM QUE SEJA POSSIVEL ESCOLHER UM ITEM DA LISTA CLICANDO
+                ofc = tabelaProdutos[linha]
+            
+                if event == 'select_entrada':
+                    prod_entrada_nome = ofc[1]
+                    prod_entrada_quantidade = ofc[2]
+                    prod_entrada_codigoBarras = ofc[3]
+                    prod_entrada_valorUnitario = ofc[8]
+            
+                    print(prod_entrada_nome)     
+                    janela4 = cadastrarEntrada()
+                    window.close() 
+        except IndexError as erro:
+            pass
+        
+    
 
 
     if window == janelaProdutosVenda: #MOSTRAR LINHA CLICADA
@@ -791,8 +871,56 @@ while True:
                         sg.popup('Existem informações Incorretas ou não cadastradas no sistema')
                 except ValueError as erro:
                     sg.popup("Algum campos foram preenchidos errado!")
+
+#---------------------------------------------------------------------------------------------------------------------
+    if event == 'inserir_entrada' : #INSERI OS VALORES DOS INPUTS NA TABELA
+            #REPLACE DA PARTE DE QUANTIDADE
+            prod_entrada_qntd = values['qnt_entrada_produto']
+            prod_entrada_qntd = prod_entrada_qntd.replace(',','')
+            novo_qntd = prod_entrada_qntd.split(".",1)
+            nova_qntd_entrada = novo_qntd[0]
+            nova_qntd_entrada = nova_qntd_entrada.replace('(','')
+            nova_qntd_entrada = int(nova_qntd_entrada)
+            print('-----------------------------')
+            print(nova_qntd_entrada)
+
+            #REPLACE DA PARTE DO VALOR UNITARIO 
+            prod_entrada_valor_unitario = values['valor_unitario_entrada']
+            prod_entrada_valor_unitario = prod_entrada_valor_unitario.replace(',', '')
+            novo_entrada_valor_unitario = prod_entrada_valor_unitario.split(".", 1)
+            novo_valor_unitario_entrada = novo_entrada_valor_unitario[0]
+            novo_valor_unitario_entrada = novo_valor_unitario_entrada.replace('(','')
+            novo_valor_unitario_entrada = int(novo_valor_unitario_entrada)
+            print(novo_valor_unitario_entrada)
+            #REPLACE NA PARTE DO NOME
+
+            novo_prod_entrada_nome = values['nome_produto_entrada'].replace(')','')
+            novo_prod_entrada_nome = novo_prod_entrada_nome.replace('(', '')
+            novo_prod_entrada_nome = novo_prod_entrada_nome.replace(',', '')
+            novo_prod_entrada_nome = novo_prod_entrada_nome.replace("'", "")
+        
+      
+
+            
+            
+            print('---------------')
+            print()
+            valor_total_entrada = float(nova_qntd_entrada) * float(novo_valor_unitario_entrada)
+            if values['nome_produto_entrada'] and values['qnt_entrada_produto'] and values['nome_fornecedor'] and values['nmr_notafiscal_entrada'] and values['cod_barra_entrada'] and values['valor_unitario_entrada'] and values['data_produto_entrada'] != '':
+                    try: #TRATAMENTO DE ERRO
+                        codigo_entrada = values['cod_barra_entrada']
+                        nome_entrada = novo_prod_entrada_nome #SE EU PEGASSE DO VALUES COMO FIZ ACIMA, ELE TERIA VARIOS () e ,, então peguei oq eu já tinha dado replace acima
+                        cursor.execute('SELECT * FROM produtos WHERE nome = ? AND cod_barras = ?', (nome_entrada, codigo_entrada))
+                        if cursor.fetchall():
+                            tabelEntradas.insert(0, [values['nmr_notafiscal_entrada'], novo_prod_entrada_nome, nova_qntd_entrada, values['nome_fornecedor'], values['cod_barra_entrada'], values['data_produto_entrada'], novo_valor_unitario_entrada,valor_total_entrada]) #O NMR 0 É PRA INSERIR NA LINHA 0
+                            window.find_element('box_entrada').Update(tabelEntradas) #ATUALIZAR A TABELA
+                        else:
+                            sg.popup('Existem informações Incorretas ou não cadastradas no sistema')
+                    except ValueError as erro:
+                        sg.popup("Algum campos foram preenchidos errado!")
   
         
+#---------------------------------------------------------------------------------------------------------------------
 
     if window == janelaVenda and event == sg.WINDOW_CLOSED:
             tabelVendas.clear() #LIMPAR A TABELA QUANDO FECHAR A JANELA
@@ -859,6 +987,52 @@ while True:
             i = 0 #RESETA O LOOP
             x = 0
 
+
+#--------------------------------------------------------------------------------------------
+    if event == 'concluir_entrada' and window == janela4:
+
+            print('>>>>')
+            while i < len(tabelEntradas): #FAZ UM LOOP PARA SOMAR TODOS OS VALORES TOTAIS DOS PRODUTOS DA LISTA
+                total_entrada = total_entrada + tabelaEntradas[i][7]
+                total_entrada = total_entrada #ISSO FAZ COM QUE NÃO BUGUE AO SOMAR, JÁ QUE O VALOR VAI SOMAR EM CIMA DO VALOR 
+                i +=1
+            else: #QUANDO A VENDA FOR EFETUADA
+                sg.popup('Venda concluida com sucesso')
+                print('acabou')
+                sg.popup('Valor Total: ' + str(total_entrada))
+     
+
+                while x < len(tabelaEntradas):
+                    
+                    nmr_notafiscal_entrada = tabelaEntradas[x][0]
+                    nome_entrada = tabelaEntradas[x][1]
+                    nome_fornecedor = tabelaEntradas[x][2]
+                    codbarra_entrada = tabelaEntradas[x][3]
+                    qntd_entrada = tabelEntradas[x][4]
+                    data_entrada = datetime.today().strftime('%d-%m-%Y')
+                    valor_unitario_entrada = tabelaEntradas[x][6]
+                    valor_total_entrada = tabelaEntradas[x][7]
+                    print('Númeor da  nota:')
+                    print(nmr_notafiscal_entrada)
+
+                    cursor.execute(f"INSERT INTO entrada VALUES('{nmr_notafiscal_entrada}', '{nome_entrada}', '{nome_fornecedor}', '{codbarra_entrada}', '{qntd_entrada}', '{data_entrada}', '{valor_unitario_entrada}', '{valor_total_entrada}')")
+                    banco.commit()
+                    
+
+                    #cursor.execute("INSERT INTO saida VALUES")
+            
+                    print('INSERINDO...')
+                    #cursor.execute("UPDATE produtos SET quantidade = quantidade - ? WHERE nome = ?", (qntd,  cod_prod))
+                    #banco.commit()
+                    x += 1
+            
+
+
+                total_entrada = 0 #RESETA O TOTAL
+                i = 0 #RESETA O LOOP
+                x = 0
+
+#--------------------------------------------------------------------------------------------
 
     if event == 'Ver Faturamento':
         print('faturamento')
