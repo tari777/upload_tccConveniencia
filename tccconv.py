@@ -304,7 +304,6 @@ def consultaProdutosVenda():
 def consultaFornecedoresEntrada():
     sg.theme('Reddit')
     layout2 = [
-        [sg.Button('Voltar', key='voltar_fornecedor')],
         [sg.Text('Fornecedores')],
         [sg.Table(tabelaFornecedores, size = (500,15), key='box_fornecedor',headings=['CódigoForn','Nome', 'Razão', 'Rua', 'CEP', 'Bairro', 'Número', 'Cidade','Estado', 'Complemento', 'Cnpj', 'IE', 'Telefone'],auto_size_columns=True,max_col_width=35, vertical_scroll_only=False)],
         [sg.Button('Filtra', key='nomesfiltrar_fornecedor'),sg.Button('Tirar Filtro', key='tirarFiltro_fornecedor'), sg.Button('Selecionar', key = 'select_fornecedor_entrada')],
@@ -517,6 +516,7 @@ while True:
     if event == 'voltar_fornecedor':
         janelaVerFornecedor.hide()
 
+
     
     if event == 'Backup':
         sg.popup('BACKUP')
@@ -599,6 +599,27 @@ while True:
 
         except IndexError as erro:
             sg.popup('Erro de Indice: Selecione algum item da tabela')
+
+#----------------------------------------------------------------------------------------
+#USAR FILTRO CONSULTA PRODUTOS VENDA
+    if event == 'nomesfiltrar_fornecedor' and window == janelaFornecedorEntrada:
+        if values['radioID_fornecedor'] == True: ##Se o botão do NOME estiver selecionado, ele procura por user
+            filtroColuna_fornecedor = 'cod_fornecedor'
+        elif values['radioNome_fornecedor'] == True: ##Se o botão de SENHA estiver selecionado, ele procura por senha
+            filtroColuna_fornecedor = 'nome'
+        elif values['radioCNPJ_fornecedor'] == True: ##Se o botão do EMAIL estiver selecionado, ele procura por EMAIL
+            filtroColuna_fornecedor = 'cnpj'
+        filtro_procurar_fornecedor = values['filtroProcurar_fornecedor']
+        print(f'procurar: {filtro_procurar_fornecedor}')
+        print(f'coluna: {filtroColuna_fornecedor}')
+        tabelaFornecedores = filtrarConteudoFornecedor()
+        window.find_element('box_fornecedor').Update(tabelaFornecedores)
+
+    #SE TIRAR O FILTRO
+    if event == 'tirarFiltro_fornecedor' and window == janelaFornecedorEntrada:
+        tabelaFornecedores = read_task_fornecedor()
+        window.find_element('box_fornecedor').Update(tabelaFornecedores)
+
 
 
         #---------------------------------------------------------------------------------------------
