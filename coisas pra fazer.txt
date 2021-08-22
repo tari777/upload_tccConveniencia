@@ -16,3 +16,9 @@ Eu posso checar se exista alguma com o nmr 1, se não der fetch eu crio [FEITO]
 Fazer com que não seja possivel colocar coisas além de letras e numeros nos produtos, pois o replace vai bugar
 
 
+Adicionar a aba de editar na consulta de entradas (FAZERRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRR)
+
+Alterar o jeito de excluir as entradas [ Está excluindo por nome, isso deleta todos iguais ]
+
+Adicioanr filtro e aba editar no ver faturamento
+

@@ -64,7 +64,7 @@ def janelaMain():
     menu_def = [
         ['&Cadastro', ['&Cadastrar Entrada', '&Cadastrar Produto', '&Cadastrar Fornecedor']],
         ['&Venda', ['&Vender Produto']],
-        ['&Consulta', ['&Consultar Entrada', '&Consultar Produtos']],
+        ['&Consulta', ['&Consultar Entrada', '&Consultar Produtos', '&Consultar Saida' ]],
         ['&Faturamento', ['&Ver Faturamento']],
         ['&Fornecedores', ['&Ver Fornecedores']],
         ['&Configurações', ['&Informações', 'Backup']]
@@ -304,18 +304,19 @@ def consultaProdutos():
 
     return sg.Window('Tela Lista', layout=layout2, size=(800,500), element_justification='center', finalize = True)
 
+
 def consultaFaturamento():
     sg.theme('Reddit')
     layout2 = [
         [sg.Button('Voltar')],
         [sg.Text('Vendas Feitas')],
-        [sg.Table(tabelaProdutos, size = (500,15), key='box',headings=['CódigoProd','Nome', 'Quantidade', 'Cod_barras', 'Descrição', 'NCM', 'ICMS', 'Valor_Entrada','Valor_Uni', 'Valor_Total'],auto_size_columns=True,max_col_width=35, vertical_scroll_only=False)],
-        [sg.Button('Filtra', key='nomesfiltrar'),sg.Button('Tirar Filtro', key='tirarFiltro'), sg.Button('Selecionar', key = 'select'), sg.Button('Deletar', key ='delete'), sg.Button('Editar', key='edit')],
+        [sg.Table(tabelaSaida, size = (500,15), key='box_saida',headings=['Nota Fiscal','Nome', 'Cod_barras', 'quantidade', 'data_saida', 'valor unitário', 'valor total'],auto_size_columns=True,max_col_width=35, vertical_scroll_only=False)],
+        [sg.Button('Filtra', key='nomesfiltrar_saida'),sg.Button('Tirar Filtro', key='tirarFiltro_saida'), sg.Button('Selecionar', key = 'select_saida'), sg.Button('Deletar', key ='delete_saida'), sg.Button('Editar', key='edit_saida')],
         [sg.Input(key='filtroProcurar')],
-        [sg.Radio('ID','filters',key = 'radioID', default=True), sg.Radio('Nome','filters',key = 'radioNome'), sg.Radio('CodBarras','filters',key = 'radioCODBARRAS')]
+        [sg.Radio('Nota Fiscal','filters',key = 'radioNota_saida', default=True), sg.Radio('Nome','filters',key = 'radioNome_saida'), sg.Radio('CodBarras','filters',key = 'radioCODBARRAS_saida')]
     ]   
 
-    return sg.Window('Tela Lista', layout=layout2, size=(800,500), element_justification='center', finalize = True)
+    return sg.Window('Tela Faturamento', layout=layout2, size=(800,500), element_justification='center', finalize = True)
 
 def consultaEntradas():
     sg.theme('Reddit')
@@ -431,6 +432,13 @@ def read_task():
     #print(data[0])
     return data
 
+def read_task_saida():
+    cursor.execute(f'''SELECT {filtro} FROM saida''')
+    data = cursor.fetchall()
+    banco.commit()
+    return data
+
+
 def read_task_venda():
     teste = tabelVendas
     data = teste
@@ -459,13 +467,16 @@ def visualizarEntrada():
 filtroColuna = ''
 filtroColuna_fornecedor = ''
 filtroColuna_entrada = ''
+filtroColuna_saida = ''
 
 filtro_procurar = ''
 filtro_procurar_fornecedor = ''
 filtro_procurar_entrada = ''
+filtro_procurar_saida = ''
 
 
 tabelaFornecedores = read_task_fornecedor()
+tabelaSaida = read_task_saida()
 tabelaProdutos = read_task() 
 tabelaVendas = read_task_venda() #alterar
 tabelaEntradas = read_task_entrada()
@@ -499,9 +510,11 @@ while True:
         print('ENTRADA')
         tabelaConsultaEntradas = visualizarEntrada()
         janelaConsultaEntrada = consultaEntradas()
-
     elif event == 'Cadastrar Fornecedor':
         JanelaFornecedor = cadastrarFornecedor()
+    elif event == 'Ver Faturamento':
+        tabelaSaida = read_task_saida()
+        janelaCosultaFaturamento = consultaFaturamento()
     elif event == 'Ver Fornecedores':
         try:
             tabelaFornecedores = read_task_fornecedor() #ATUALIZA A TABELA QUANDO ABRE A JENELA ------- IMPORTANTE COLOCAR ISSO ANTES DE ABRIR JANELA
@@ -1227,13 +1240,10 @@ while True:
 
 #--------------------------------------------------------------------------------------------
 
-    if event == 'Ver Faturamento':
-        print('faturamento')
-        janelaCosultaFaturamento = consultaFaturamento()
+  
 
 
         
-       
         
 
         
