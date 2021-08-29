@@ -223,6 +223,25 @@ def editarEntradas():
     ]
     return sg.Window('Alterar Entrada', layout=layout, size=(600,400), element_justification='center', finalize = True)
 
+def editarSaida():
+    sg.theme('Reddit')
+    layout = [
+        [sg.Text('Editar Saida')],
+        #Mesma linha
+        [sg.Frame('Nmr Nota',[ [sg.Input(nmr_nota_fiscal_saida, key='nmr_notaFiscal_saida', size=(15,30), readonly=True)]],title_color='black', title_location='n'), 
+            sg.Frame('Nome',[ [sg.Input(nome_saida, key='nome_saida', size=(15,30))]],title_location='n'),   
+            sg.Frame('CodBarra',[ [sg.Input(cod_barra_saida, key='cod_barra_saida', size=(15,30))]], title_location='n'),
+            ],
+        [sg.Frame('Quantidade',[ [sg.Input(quantidade_saida, key='quantidade_saida', size=(10,30))]], title_location='n'), 
+            sg.Frame('Data Saida',[ [sg.Input(data_saida_saida,key='data_saida_saida', size=(17,30))]],title_location='n'),
+            sg.Frame('Valor Unitário', [ [sg.Input(valor_unitario_saida, key='valor_unitario_saida', size=(15,30))]], title_location='n'),
+            ], 
+        [sg.Frame('Valor Total',[ [sg.Input(valor_total_saida, key='valor_total_saida', size=(15,30), readonly=True)]], title_location='n'),
+            ],      
+        [sg.Button('Alterar', key='alterar_saida',pad=(10,30))],
+    ]
+    return sg.Window('Alterar Saida', layout=layout, size=(600,400), element_justification='center', finalize = True)
+
     
 
 def add_produto():
@@ -308,12 +327,12 @@ def consultaProdutos():
 def consultaFaturamento():
     sg.theme('Reddit')
     layout2 = [
-        [sg.Button('Voltar')],
+        [sg.Button('Voltar', key= 'voltar_faturamento')],
         [sg.Text('Vendas Feitas')],
         [sg.Table(tabelaSaida, size = (500,15), key='box_saida',headings=['Nota Fiscal','Nome', 'Cod_barras', 'quantidade', 'data_saida', 'valor unitário', 'valor total'],auto_size_columns=True,max_col_width=35, vertical_scroll_only=False)],
         [sg.Button('Filtra', key='nomesfiltrar_saida'),sg.Button('Tirar Filtro', key='tirarFiltro_saida'), sg.Button('Selecionar', key = 'select_saida'), sg.Button('Deletar', key ='delete_saida'), sg.Button('Editar', key='edit_saida')],
-        [sg.Input(key='filtroProcurar')],
-        [sg.Radio('Nota Fiscal','filters',key = 'radioNota_saida', default=True), sg.Radio('Nome','filters',key = 'radioNome_saida'), sg.Radio('CodBarras','filters',key = 'radioCODBARRAS_saida')]
+        [sg.Input(key='filtroProcurarSaida')],
+        [sg.Radio('Nota Fiscal','filters',key = 'radioNotaSaida', default=True), sg.Radio('Nome','filters',key = 'radioNomeSaida'), sg.Radio('CodBarras','filters',key = 'radioCODBARRASSaida')]
     ]   
 
     return sg.Window('Tela Faturamento', layout=layout2, size=(800,500), element_justification='center', finalize = True)
@@ -410,6 +429,13 @@ def filtrarConteudoEntrada():
     data = cursor.fetchall()
     banco.commit()
     return data 
+
+def filtrarConteudoSaida():
+    cursor.execute(f'''SELECT * FROM saida WHERE {filtroColuna_faturamento} LIKE "%{filtro_procurar_faturamento}%"''') #É PRECISO USAR ASPAS ENTRE O FILTRO PROCURAR, POIS SE NÃO N DA CERTO ASPAS DUPLAS NO CASO ) ESSE LIKE E AS % entre o texto faz com que ele procure algo próximo
+    data = cursor.fetchall()
+    banco.commit()
+    return data 
+
     
 def deletarBanco():
     cursor.execute(f"DELETE FROM produtos WHERE nome = '{nomeDeletar}'")
@@ -422,6 +448,11 @@ def deletarBancoFornecedor():
 def deletarBancoEntradas():
     cursor.execute(f"DELETE FROM entrada WHERE nome = '{nomeDeletar}'")
     banco.commit()
+
+def deletarBancoSaida():
+    cursor.execute(f"DELETE FROM saida WHERE nome = '{nomeDeletar}'")
+    banco.commit()
+
   
 filtro = '*' #Define qual sera o filtro usado, o padrão é não filtrar, ou seja, mostrar todos
 
@@ -467,12 +498,13 @@ def visualizarEntrada():
 filtroColuna = ''
 filtroColuna_fornecedor = ''
 filtroColuna_entrada = ''
-filtroColuna_saida = ''
+filtroColuna_faturamento = ''
 
 filtro_procurar = ''
 filtro_procurar_fornecedor = ''
 filtro_procurar_entrada = ''
-filtro_procurar_saida = ''
+filtro_procurar_faturamento = ''
+
 
 
 tabelaFornecedores = read_task_fornecedor()
@@ -485,7 +517,8 @@ tabelaConsultaEntradas = visualizarEntrada()
 
 
 
-janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor, janelaVerFornecedor, janelaEditarFornecedor, janelaProdutosEntrada, janelaFornecedorEntrada, janelaConsultaEntrada, janelaEditarEntrada, janelaCosultaFaturamento = janelaMain(), None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+
+janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor, janelaVerFornecedor, janelaEditarFornecedor, janelaProdutosEntrada, janelaFornecedorEntrada, janelaConsultaEntrada, janelaEditarEntrada, janelaConsultaFaturamento, janelaEditarSaida = janelaMain(), None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
 
 
 while True:
@@ -514,7 +547,7 @@ while True:
         JanelaFornecedor = cadastrarFornecedor()
     elif event == 'Ver Faturamento':
         tabelaSaida = read_task_saida()
-        janelaCosultaFaturamento = consultaFaturamento()
+        janelaConsultaFaturamento = consultaFaturamento()
     elif event == 'Ver Fornecedores':
         try:
             tabelaFornecedores = read_task_fornecedor() #ATUALIZA A TABELA QUANDO ABRE A JENELA ------- IMPORTANTE COLOCAR ISSO ANTES DE ABRIR JANELA
@@ -596,6 +629,9 @@ while True:
 
     if event == 'voltar_fornecedor':
         janelaVerFornecedor.hide()
+
+    if event == 'voltar_faturamento':
+        window.close()
 
 
     
@@ -929,6 +965,106 @@ while True:
 
     #-----------------------------------------------------------------------------------
 
+
+#---------------------------------------------------------------------------------------------
+        #USAR FILTRO CONSULTA FATURAMENTO
+    if event == 'nomesfiltrar_saida' and window == janelaConsultaFaturamento:
+        if values['radioNotaSaida'] == True: ##Se o botão do NOME estiver selecionado, ele procura por user
+            filtroColuna_faturamento = 'nmr_nota_fiscal'
+        elif values['radioNomeSaida'] == True: ##Se o botão de SENHA estiver selecionado, ele procura por senha
+            filtroColuna_faturamento = 'nome'
+        elif values['radioCODBARRASSaida'] == True: ##Se o botão do EMAIL estiver selecionado, ele procura por EMAIL
+            filtroColuna_faturamento = 'cod_barras'
+        filtro_procurar_faturamento = values['filtroProcurarSaida']
+        print(f'procurar: {filtro_procurar_faturamento}')
+        print(f'coluna: {filtro_procurar_faturamento}')
+        tabelaSaida = filtrarConteudoSaida()
+        window.find_element('box_saida').Update(tabelaSaida)
+
+    #SE TIRAR O FILTRO
+    if event == 'tirarFiltro_saida' and window == janelaConsultaFaturamento:
+        tabelaSaida = read_task_saida()
+        window.find_element('box_saida').Update(tabelaSaida)
+    if event == 'select_saida' and window == janelaConsultaFaturamento:
+        #TRATAMENTO DE ERRO
+        try:
+            if tabelaSaida:
+                x = values['box_saida'][0] #ISSO FAZ COM QUE SEJA POSSIVEL ESCOLHER UM ITEM DA LISTA CLICANDO
+                print(x)
+                print(tabelaSaida[x])
+                sg.popup(f'Voce selecionou {tabelaSaida[x]}')
+
+        except IndexError as erro:
+            sg.popup('Erro de Indice: Selecione algum item da tabela')
+
+    #DELETAR SAIDA
+    if event == 'delete_saida' and window == janelaConsultaFaturamento: 
+            try:
+                if tabelaSaida:
+                    deletar = values['box_saida'][0]
+                    ofc = tabelaSaida[deletar]
+                    nomeDeletar = ofc[1] #ISSO MOSTRA O PARAMETRO 1 DENTRO DA TUPLA
+                    print(nomeDeletar) 
+                    deletarBancoSaida()
+                    tabelaSaida = read_task_saida()  #ATUALIZA OS DADOS
+                    window.find_element('box_saida').Update(tabelaSaida) #ATUALIZA OS DADOS
+                    sg.popup(f'A nota com o nome {nomeDeletar} foi excluida com sucesso!')
+                    
+            except IndexError as erro:
+                sg.popup('Erro de Indice: Selecione algum item da tabela')
+
+
+    if event == 'edit_saida' and window == janelaConsultaFaturamento:
+        try:
+            if tabelaSaida:
+                deletar = values['box_saida'][0] #ISSO FAZ COM QUE SEJA POSSIVEL ESCOLHER UM ITEM DA LISTA CLICANDO
+                ofc = tabelaSaida[deletar]
+                nmr_nota_fiscal_saida = ofc[0]
+                nome_saida = ofc[1] #ISSO MOSTRA O PARAMETRO 1 DENTRO DA TUPLA  ----- SERVE PARA PASSAR AS INFOS PRO INPUT DEFAULT TEXT
+                cod_barra_saida = ofc[2] #ISSO MOSTRA O PARAMETRO 2 DENTRO DA TUPLA ----- SERVE PARA PASSAR AS INFOS PRO INPUT DEFAULT TEXT
+                quantidade_saida = ofc[3] #ISSO MOSTRA O PARAMETRO 3  DENTRO DA TUPLA ----- SERVE PARA PASSAR AS INFOS PRO INPUT DEFAULT TEXT
+                data_saida_saida = ofc[4]
+                valor_unitario_saida = ofc[5]
+                valor_total_saida = ofc[6]
+                
+                janelaEditarSaida = editarSaida()
+                window.close() #FECHA A TELA DE LISTA DE PRODUTOS
+        except IndexError as erro:
+            sg.popup('Erro de Indice: Selecione algum item da tabela')
+
+    if event == 'alterar_saida' and window == janelaEditarSaida:
+       
+        #IDENTIFICA OS NOVO CAMPO PRA ALTERAR
+        n_nmr_notaFiscal_saida =  values['nmr_notaFiscal_saida'] 
+        n_nome_saida =  values['nome_saida']
+        n_cod_barra_saida = values['cod_barra_saida']
+        n_quantidade_saida = values['quantidade_saida']
+        n_data_saida_saida = values['data_saida_saida']
+        n_valor_unitario_saida = values['valor_unitario_saida']
+        valor_final_saida = float(n_valor_unitario_saida) * float(n_quantidade_saida)
+         
+
+        if n_nmr_notaFiscal_saida and n_nome_saida and n_cod_barra_saida and n_quantidade_saida and n_data_saida_saida and n_valor_unitario_saida and valor_final_saida != '':
+            try: #TRATAMENTO DE ERRO
+                cursor.execute(f"UPDATE saida SET nome = '{n_nome_saida}' WHERE nome = '{nome_saida}' and nmr_nota_fiscal = '{nmr_nota_fiscal_saida}'")
+                cursor.execute(f"UPDATE saida SET cod_barras = '{n_cod_barra_saida}' WHERE nome = '{nome_saida}' and nmr_nota_fiscal = '{nmr_nota_fiscal_saida}'")
+                cursor.execute(f"UPDATE saida SET quantidade = '{n_quantidade_saida}' WHERE nome = '{nome_saida}' and nmr_nota_fiscal = '{nmr_nota_fiscal_saida}'")
+                cursor.execute(f"UPDATE saida SET data_saida = '{n_data_saida_saida}' WHERE nome = '{nome_saida}' and nmr_nota_fiscal = '{nmr_nota_fiscal_saida}'")
+                cursor.execute(f"UPDATE saida SET valor_unitario = '{n_valor_unitario_saida}' WHERE nome = '{nome_saida}' and nmr_nota_fiscal = '{nmr_nota_fiscal_saida}'")
+                cursor.execute(f"UPDATE saida SET valor_total = '{valor_final_saida}' WHERE nome = '{nome_saida}' and nmr_nota_fiscal = '{nmr_nota_fiscal_saida}'")
+                banco.commit()  
+                
+                window.close() #FECHA A TELA DE EDIÇÃO DE PRODUTOS / EU USEI ISSO POIS ELE CONSEGUE ATUALIZAR QUANDO ABRE A TELA, DIFERENTE DO HIDE E UNHIDE
+                
+                tabelaSaida = read_task_saida()
+                janelaConsultaFaturamento = consultaFaturamento()
+                
+            except ValueError as erro:
+                sg.popup("Algum campo foi preenchido errado!")
+        else:
+            sg.popup("Erro de cadastro: Existem campos vázios", title='ERRO')
+
+    #-----------------------------------------------------------------------------------
 
    
     if event == 'cadastrar_produto': #BOTÃO DA TELA DE CADASTRO DE PRODUTO
