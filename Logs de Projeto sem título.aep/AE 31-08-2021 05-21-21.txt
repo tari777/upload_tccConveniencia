@@ -1,0 +1,8 @@
+  31/08/2021 05:21:21: iniciando composição “Composição 1”.
+
+  Saída para: D:\videos prontos\Composição 1.mp4    31/08/2021 05:22:52: composição concluída “Composição 1”.
+
+
+  Tempo total decorrido: 1 min, 31 s
+Log fechado em 31/08/2021 às 05:22:52
+

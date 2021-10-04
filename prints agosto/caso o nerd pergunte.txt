@@ -1,0 +1,56 @@
+------------------Tabela Fornecedores:-------------------------
+cod_fornecedor: Código para consulta interna: Auto Incrementavel!
+
+----------------Tabela Produtos:--------------------------
+cod_produto: Código para consulta interna: Auto Incrementavel!
+valor_entrada: Vai ser o valor que a conveniencia pagou para o fornecedor do produto!
+valor_unitario: Vai ser o valor que vc vai vender o produto na sua loja ( O valor que o cliente vai pagar)
+valor_total: Somo do valor_unitario e da quantidade!
+
+
+--------------Tabela entrada:---------------------
+
+nmr_nota_fiscal = Vai ser a nota que o fornecedor vai te dar!
+
+data_entrada = Pega a data atual.
+
+valor_total =  Soma da quantidade da entrada e do valor_unitario
+
+
+--------------Tabela saida:-------------------------
+nmr_nota_fiscal: Como nós não podemos emitir uma nota fiscal, o nmr_nota_fiscal é auto incrementavel para consulta.
+
+valor_unitario: O valor unitário é automaticamente puxado da tabela de produtos.
+
+
+
+
+
+------------Possiveis duvidas daquele cara--------------
+
+***Dar entrada em vários produtos***
+Na tela de cadastro de entrada, tem uma tabela onde é possivel inserir todos os produtos que vão ser incluidos 
+na entrada, assim todos que vc inserir, vão ter o mesmo número da nota fiscal que vc colocar.
+
+***Vender vários produtos*** 
+
+Na hora de vendar vários produtos, o número da nota fiscal de saida é a mesma para todos eles.
+Esse é o meio de pesquisar os produtos que sairam naquela venda.
+
+**Existe campos necessários**
+
+Cara, esse programa não é feito pra emitir uma nota fiscal realmente, sem nexo tlg, até pq a gente ta no terceiro
+colegial.
+O programa é feito para um controle de produtos no local.
+
+**Quais são os principais campos para filtrar as tabelas**
+Os principais campos são os códigos de cada um, sendo ou o número da nota fiscal ou o código do produto e etc.
+Também é possivel filtrar a ta
+
+**Pq existe a tabela conveniencia?**
+Serve pra armazenar o dados do local da conveniencia, para
+
+
+
+
+

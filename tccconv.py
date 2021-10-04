@@ -34,12 +34,17 @@ x = 0
 tabelVendas = []
 tabelEntradas = []
 tabelConsultaEntradas = []
-if not os.path.exists('C:/pastaTCC'):
-    os.makedirs('C:/pastaTCC')
-banco = sqlite3.connect('C:/pastaTCC/tcc_database.db')
 #banco = sqlite3.connect("C:/Users/mathe/Desktop/tcc conveniencia/tcc_database.db") 
 #data = pd.read_sql_query("SELECT * from produtos", banco)
 #print(data[data['valor_total'] == 25]) #PROCURA ONDE VALOR TOTAL = 24
+
+
+
+
+
+if not os.path.exists('C:/pastaTCC'):
+    os.makedirs('C:/pastaTCC')
+banco = sqlite3.connect('C:/pastaTCC/tcc_database.db')
 
 cursor = banco.cursor()
 
@@ -47,6 +52,10 @@ cursor.execute("CREATE TABLE IF NOT EXISTS produtos (cod_produto INTEGER PRIMARY
 cursor.execute("CREATE TABLE IF NOT EXISTS fornecedores (cod_fornecedor INTEGER PRIMARY KEY AUTOINCREMENT, nome text, razao_social text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text, cnpj text, insc_estadual text, telefone text)")
 cursor.execute("CREATE TABLE IF NOT EXISTS entrada (nmr_nota_fiscal TEXT, nome text, nome_fornecedor text, cod_barras text, quantidade integer, data_entrada text, valor_unitario real, valor_total real)")
 cursor.execute("CREATE TABLE IF NOT EXISTS saida (nmr_nota_fiscal INTEGER, nome text, cod_barras text, quantidade integer, data_saida text, valor_unitario real, valor_total real)")
+
+
+
+
 cursor.execute("CREATE TABLE IF NOT EXISTS conveniencia (razao_social TEXT PRIMARY KEY, nome text, nome_fantasia text, rua text, cep text, bairro text, numero text, cidade text, estado text, complemento text,  cnpj text, insc_estadual text, telefone text)")
 
 def on_table_row_click(self, table, row, item):
@@ -268,6 +277,8 @@ def add_produto():
             print(erro)
     else:
         sg.popup("Erro de cadastro: Existem campos vázios", title='ERRO')
+
+        
 def add_fornecedor():
     nome_fornecedor = values['nome_fornecedor']
     razao_social_fornecedor = values['razao_social_fornecedor']
