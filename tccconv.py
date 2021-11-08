@@ -11,6 +11,8 @@ from PIL import Image
 from datetime import datetime
 import pandas as pd
 from datetime import datetime
+import shutil
+
 
 total = 0
 total_entrada = 0
@@ -28,15 +30,12 @@ prod_entrada_codigoBarras = ''
 prod_entrada_data = ''
 prod_entrada_valorUnitario = ''
 
-testo = 'fodase'
+
 i = 0
 x = 0
 tabelVendas = []
 tabelEntradas = []
 tabelConsultaEntradas = []
-#banco = sqlite3.connect("C:/Users/mathe/Desktop/tcc conveniencia/tcc_database.db") 
-#data = pd.read_sql_query("SELECT * from produtos", banco)
-#print(data[data['valor_total'] == 25]) #PROCURA ONDE VALOR TOTAL = 24
 
 
 
@@ -321,6 +320,22 @@ def consultaFornecedores():
 
     return sg.Window('Tela Lista', layout=layout2, size=(800,500), element_justification='center', finalize = True)
 
+def verInfo():
+    sg.theme('Reddit')
+    layout2 = [
+        [sg.Button('Voltar', key='voltar_info')],
+        [sg.Text('TCC ETIM - 2021')],
+        [sg.Text('Desenvolvido por:')],
+        [sg.Text('Pedro Bastos')],
+        [sg.Text('Pedro Lacerda')],
+        [sg.Text('Victor Hugo Finotti')],
+        [sg.Text('Letícia Lima')],
+        [sg.Text('Kellen')],
+        [sg.Text('Lindilaine?')],
+    ]   
+
+    return sg.Window('Tela Informações', layout=layout2, size=(300,250), element_justification='center', finalize = True)
+
 def consultaProdutos():
     sg.theme('Reddit')
     layout2 = [
@@ -396,6 +411,18 @@ def consultaProdutosEntrada():
     ]   
 
     return sg.Window('Tela Lista', layout=layout2, size=(800,500), element_justification='center', finalize = True)
+
+
+def tela_backup():
+    sg.theme('Reddit')
+    layout2 = [
+       [sg.T("")], [sg.Text("Choose a file: "), sg.Input(default_text=r'C:\pastaTCC\tcc_database.db', key="backup_origin"), sg.FileBrowse()],
+       [sg.T("")], [sg.Text("Salvar Backup: "), sg.Input(key="backup_dest"), sg.FolderBrowse()],
+       [sg.Button('Salvar', key='salvar_backup')]
+      
+    ]   
+
+    return sg.Window('Tela Lista', layout=layout2, size=(600,300), element_justification='center', finalize = True)
 
 def venderProduto():
     sg.theme('Reddit')
@@ -529,7 +556,7 @@ tabelaConsultaEntradas = visualizarEntrada()
 
 
 
-janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor, janelaVerFornecedor, janelaEditarFornecedor, janelaProdutosEntrada, janelaFornecedorEntrada, janelaConsultaEntrada, janelaEditarEntrada, janelaConsultaFaturamento, janelaEditarSaida = janelaMain(), None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+janela1,janela2,janela3,janela4,janela5,janela6,janela7, janelaVenda, janelaProdutosVenda, JanelaFornecedor, janelaVerFornecedor, janelaEditarFornecedor, janelaProdutosEntrada, janelaFornecedorEntrada, janelaConsultaEntrada, janelaEditarEntrada, janelaConsultaFaturamento, janelaEditarSaida, janelaInfos, janelaBackup = janelaMain(), None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
 
 
 while True:
@@ -550,6 +577,9 @@ while True:
         print(janela6)
         tabelaProdutos = read_task() #ATUALIZA A TABELA QUANDO MUDA A TELA ------- IMPORTANTE COLOCAR ISSO ANTES DE ABRIR JANELA
         janela6 = consultaProdutos() 
+    elif event == "Informações":
+        janelaInfos = verInfo()
+        
     elif event == 'Consultar Entrada':
         print('ENTRADA')
         tabelaConsultaEntradas = visualizarEntrada()
@@ -643,11 +673,26 @@ while True:
 
     if event == 'voltar_faturamento':
         window.close()
+    if event == 'voltar_info':
+        window.close()
 
 
     
     if event == 'Backup':
-        sg.popup('BACKUP')
+        janelaBackup = tela_backup()
+
+    if event == 'salvar_backup':      
+        try:
+            dest = values[r'backup_dest'] + r'\backuptcc.db'
+            origin = values[r'backup_origin']
+            shutil.copyfile(origin, dest)
+            sg.popup(f'Backup Salvo: ' + dest )
+
+        except PermissionError as erro:
+            sg.popup('Selecione um destino')
+
+
+    
         
     #USAR FILTRO CONSULTA PRODUTOS
     if event == 'nomesfiltrar' and window == janela6:
